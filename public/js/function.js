@@ -1,5 +1,8 @@
 'use strict'; //строгая типизация
-$.datetimepicker.setLocale('ru');
+
+var socket = io(); //создание сокета
+
+$.datetimepicker.setLocale('ru');//установка локации для datitimepicker
 
 /* при загрузке страницы */
 $(window).on('load', () => {
