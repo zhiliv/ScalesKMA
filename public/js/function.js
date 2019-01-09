@@ -2,16 +2,16 @@
 
 var socket = io(); //создание сокета
 
-$.datetimepicker.setLocale('ru');//установка локации для datitimepicker
+$.datetimepicker.setLocale('ru'); //установка локации для datitimepicker
 
 /* при загрузке страницы */
 $(window).on('load', () => {
   $('#Data').show('', () => {
     $('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 64); //установка высоты для блока ListScalesDataMass
   });
-  $('.loader').hide();  //скрыть элемент
+  $('.loader').hide(); //скрыть элемент
   OnLoadIndex(); //после заггрузки главной страницы
-  FillDateTimemainGraphics();//заполнение дат
+  FillDateTimemainGraphics(); //заполнение дат
 })
 
 /* нажатие на кнопку "График" */
@@ -21,16 +21,16 @@ $('#ItemMainNav_Graphics').on('click', LoadFormGraphics()); //при нажит�
 function FillDateTimemainGraphics() {
   /* получение даты начала месяца */
   function GetStartDate() {
-    var date = moment().startOf('month').format('DD.MM.YYYY HH:mm');  //установка формата времени moment
-    return date;  //возврат значения
-  } 
+    var date = moment().startOf('month').format('DD.MM.YYYY HH:mm'); //установка формата времени moment
+    return date; //возврат значения
+  }
   var datetimeStart = GetStartDate(); //начало месяца
 
   /* получение текущей даты */
   function GetEndtDate() {
 
     var date = moment().format('DD.MM.YYYY HH:mm'); //установка даты в нудном формате
-    return date;//возврат значения
+    return date; //возврат значения
   }
   var datetimeEnd = GetEndtDate(); //текущая дата
 
@@ -44,7 +44,7 @@ function FillDateTimemainGraphics() {
   })
 
   /* установка типа datetimepicker для input */
-  function SetDatePimePicker(){
+  function SetDatePimePicker() {
     $('#datetimeStart').datetimepicker({
       timepicker: true,
       format: 'Y.m.d H:i',
@@ -55,7 +55,7 @@ function FillDateTimemainGraphics() {
     }); //указываем что это datepicker
   }
 
-  SetDatePimePicker();  //установка datetimepicker для полей input
+  SetDatePimePicker(); //установка datetimepicker для полей input
 }
 
 /* определение высоты #ListScalesDataMass */
@@ -98,6 +98,7 @@ function OnLoadIndex() {
   $(window).on('resize', () => { //при изменнеии размеров формы
     $('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 64); //установка высоты для блока ListScalesDataMass
   })
+  FillCardsScales(); //заполнение карточек весов
 }
 
 /* загрузка формы Графики */
@@ -105,4 +106,42 @@ function LoadFormGraphics() {
   $('#MainData').load('public/Forms/mainChart.html', () => { //загрузка файла html
     $('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 64); //установка высоты для блока ListScalesDataMass
   })
+}
+
+/* заполнение каточек весов */
+function FillCardsScales() {
+
+  $('#ListScalesDataMass .scrollbar-primary').empty();
+  socket.emit('GetNameScales', list => {
+    list.forEach((Scales, ind) => {
+      var NameScales = Scales['name'];
+      Card(NameScales, ind); //формирование карточки весов
+    })
+  })
+
+  /* ганерания карточки */
+  function Card(NameScales, ind) {
+    $('<div>', {
+        class: "col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12",
+        style: "padding-top: 3%;"
+      })
+      .appendTo('#ListScalesDataMass .scrollbar-primary'); //создание блока
+
+    $('<div>', {
+        class: "card"
+      })
+      .appendTo($('#ListScalesDataMass .scrollbar-primary .col-xs-12')[ind]); //создание блока
+
+    $('<div>', {
+        class: "card-body"
+      })
+      .appendTo($('.scrollbar-primary  .card')[ind]); //создание блока
+
+    $('<h4>', {
+        class: "card-title",
+        text: NameScales
+      })
+      .appendTo($('.scrollbar-primary  .card-body')[ind]) //создание заголовка с именем весов
+  }
+
 }

@@ -72,3 +72,14 @@ function StartParse() {
     });
   });
 }
+
+/* обработка сокетов */
+io.on('connection', socket => {
+  /* получение всех имен весов */
+  socket.on('GetNameScales', callback => {
+    DB.GetNameScales(res => {
+      callback(res);
+    })
+  })
+
+})
