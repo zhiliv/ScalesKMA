@@ -82,4 +82,10 @@ io.on('connection', socket => {
     })
   })
 
+
+  socket.on('GetSostavGroupOfVagonsForDay', (NameScales, callback) => {
+    DB.GetSostavGroupOfVagonsForDay(NameScales, result => {
+      callback(result)
+    })
+  })
 })

@@ -111,10 +111,11 @@ function LoadFormGraphics() {
 /* заполнение каточек весов */
 function FillCardsScales() {
 
-  $('#ListScalesDataMass .scrollbar-primary').empty();
-  socket.emit('GetNameScales', list => {
-    list.forEach((Scales, ind) => {
-      var NameScales = Scales['name'];
+  $('#ListScalesDataMass .scrollbar-primary').empty(); //очистка блока
+  socket.emit('GetNameScales', list => { //получение имен весов
+    list.forEach((Scales, ind) => { //перебор полученных значений
+      var NameScales = Scales['name']; //имя весов
+      GetSostavGroupOfVagonsForDay(NameScales);
       Card(NameScales, ind); //формирование карточки весов
     })
   })
@@ -141,7 +142,14 @@ function FillCardsScales() {
         class: "card-title",
         text: NameScales
       })
-      .appendTo($('.scrollbar-primary  .card-body')[ind]) //создание заголовка с именем весов
+      .appendTo($('.scrollbar-primary  .card-body')[ind]); //создание заголовка с именем весов
+  }
+
+  /* получение массы добычи */
+  function GetSostavGroupOfVagonsForDay(NameScales){
+    socket.emit('GetSostavGroupOfVagonsForDay', NameScales, result => {
+      console.log(result)
+    })
   }
 
 }
