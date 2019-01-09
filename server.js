@@ -52,11 +52,6 @@ exports.StartServer = function () {
       )
     ); //вывод линии в терминале
 
-    /* обработка сокетов */
-    io.on('connection', socket => {
-       
-    });
-
     setInterval(() => {
       //запуск сервера через интервал
       if (StartParseParams == 'true') {
