@@ -136,7 +136,6 @@ function GetDataFile(DirName, TypeScales, Scales, callback) {
   return callback(result);
 };
 
-
 /* получение параметров весов */
 exports.FillScales = ScalesAdress => {
   DB.GetNettoAdress([
