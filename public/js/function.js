@@ -1,31 +1,33 @@
-'use strict';
+'use strict'; //строгая типизация
+$.datetimepicker.setLocale('ru');
 
 /* при загрузке страницы */
 $(window).on('load', () => {
   $('#Data').show('', () => {
     $('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 64); //установка высоты для блока ListScalesDataMass
   });
-  $('.loader').hide()
-  OnLoadIndex();
-  FillDateTimemainGraphics()
+  $('.loader').hide();  //скрыть элемент
+  OnLoadIndex(); //после заггрузки главной страницы
+  FillDateTimemainGraphics();//заполнение дат
 })
 
 /* нажатие на кнопку "График" */
-$('#ItemMainNav_Graphics').on('click', LoadFormGraphics());
+$('#ItemMainNav_Graphics').on('click', LoadFormGraphics()); //при нажитии на кнопку "Применить" - загрузить форму с графиком
 
-/* заоплнить дату начала и текущию дату в гавном кграфике */
+/* заполнение дат начала и текущию дату в гавном кграфике */
 function FillDateTimemainGraphics() {
   /* получение даты начала месяца */
   function GetStartDate() {
-    var date = moment().startOf('month').format('DD.MM.YYYY HH:mm');
-    return date;
-  }
+    var date = moment().startOf('month').format('DD.MM.YYYY HH:mm');  //установка формата времени moment
+    return date;  //возврат значения
+  } 
   var datetimeStart = GetStartDate(); //начало месяца
 
   /* получение текущей даты */
   function GetEndtDate() {
-    var date = moment().format('DD.MM.YYYY HH:mm');
-    return date;
+
+    var date = moment().format('DD.MM.YYYY HH:mm'); //установка даты в нудном формате
+    return date;//возврат значения
   }
   var datetimeEnd = GetEndtDate(); //текущая дата
 
@@ -37,6 +39,20 @@ function FillDateTimemainGraphics() {
   $('#datetimeEnd').next().each((ind, el) => { //перебор элементов
     $(el).addClass('active') //добавление класса для label
   })
+
+  /* установка типа datetimepicker для input */
+  function SetDatePimePicker(){
+    $('#datetimeStart').datetimepicker({
+      timepicker: true,
+      format: 'Y.m.d H:i',
+    }); //указываем что это datepicker
+    $('#datetimeEnd').datetimepicker({
+      timepicker: true,
+      format: 'Y.m.d H:i',
+    }); //указываем что это datepicker
+  }
+
+  SetDatePimePicker();  //установка datetimepicker для полей input
 }
 
 /* определение высоты #ListScalesDataMass */
