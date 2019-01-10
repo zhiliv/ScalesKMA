@@ -147,10 +147,10 @@ function FillCardsScales() {
 
   /* получение массы добычи */
   function GetSostavGroupOfVagonsForDay(NameScales){
-    var params = [];
-    params.push($('#datetimeStart').val());
-    params.push($('#datetimeEnd').val());
-    params.push(NameScales);
+    var params = {};
+    params.DateTimeStart = $('#datetimeStart').val();
+    params.DateTimeEnd = $('#datetimeEnd').val();
+    params.NameScales = NameScales;
     socket.emit('GetSostavGroupOfVagonsForDay', params, result => {
       console.log(result)
     })

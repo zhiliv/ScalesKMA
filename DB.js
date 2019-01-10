@@ -72,13 +72,12 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
     var arr = [];//новый массив
     var sql = 'SELECT date_format(DateTimeOp, "%Y-%m-%d %H:%i") as DateTimeOp, MAX(NumVagons),  SUM(Mass) FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateTimeOp';  //формирование запроса
     arrTypeScales.forEach(async (typeScaels, ind)=> {
-      var value = await params; //формирование значений для параметров
-      value[3] = await typeScaels;
+      var value = await [params.DateTimeStart, params.DateTimeEnd, params.NameScales, typeScaels]
       sql = await DB.format(sql, value); //формирование sql запроса со значениями для параметров
       var Obj = {};
-      /*     Obj.NameScales = NameScales;
-          Obj.typeScaels = typeScaels;  */
-      Obj.Sql = await sql;  
+      Obj.NameScales = params.NameScales;
+      Obj.typeScaels = typeScaels; 
+      Obj.Sql = sql;  
       await arr.push(Obj);
       if (ind == arrTypeScales.length-1) {
         result.resolve(arr);
