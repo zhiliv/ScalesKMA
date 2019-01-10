@@ -63,7 +63,7 @@ exports.GetNameScales = callback => {
 /* получение  группированных вагонов у составов по дням на весах*/
 exports.GetSostavGroupOfVagonsForDay = async (NameScales, callback) => {
   var arr = [];
-  var sql = 'SELECT DATE(DateTimeOp) As Date, SUM(Mass) FROM DataScales WHERE CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DATE(DateTimeOp)';
+  var sql = 'SELECT Date(DateTimeOp) as DateOp, time_format(Time(DateTimeOp), "%H:%i") as TimeOp, MAX(NumVagons),  SUM(Mass) FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateOp, TimeOp';
   await async.each(arrTypeScales, async typeScaels => {
     var value = [NameScales, typeScaels]; //формирование значений для параметров
     sql = await DB.format(sql, value); //формирование sql запроса со значениями для параметров
@@ -71,6 +71,7 @@ exports.GetSostavGroupOfVagonsForDay = async (NameScales, callback) => {
     Obj.NameScales = NameScales;
     Obj.typeScaels = typeScaels;
     Obj.Sql = sql;
+    console.log(sql)
     await arr.push(Obj);
   })
   callback(arr)
