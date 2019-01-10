@@ -17,7 +17,7 @@ var DB = mysql.createConnection({
   database: 'scales' //имя БД
 });
 
-const arrTypeScales = ['netto', 'brutto']; //создание массива с типоами весов
+const arrTypeScales = ['brutto', 'netto']; //создание массива с типоами весов
 
 module.exports.DB = DB; //делаем модуль экспортным
 DB.connect(); //устанавливаем соединение с БД
@@ -62,27 +62,42 @@ exports.GetNameScales = callback => {
 //TODO
 /* получение  группированных вагонов у составов по дням на весах*/
 exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
-  FillArr(params).then(res => {
-    callback(res)
+  FillArr(params).then(res => { //Обход массива типов весов
+    callback(res) //возврат результата в callback
   })
 
-/* обход типов весов */
+  /* обход типов весов */
   function FillArr(params) {
     var result = Q.defer(); //создание promise
-    var arr = [];//новый массив
-    var sql = 'SELECT date_format(DateTimeOp, "%Y-%m-%d %H:%i") as DateTimeOp, MAX(NumVagons),  SUM(Mass) FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateTimeOp';  //формирование запроса
-    arrTypeScales.forEach(async (typeScaels, ind)=> {
+    var arr = []; //новый массив
+    var sql = 'SELECT date_format(DateTimeOp, "%Y-%m-%d %H:%i") as DateTimeOp, MAX(NumVagons),  SUM(Mass) FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateTimeOp'; //формирование запроса
+    arrTypeScales.forEach(async (typeScaels, ind) => {
       var value = await [params.DateTimeStart, params.DateTimeEnd, params.NameScales, typeScaels]
       sql = await DB.format(sql, value); //формирование sql запроса со значениями для параметров
-      var Obj = {};
-      Obj.NameScales = params.NameScales;
-      Obj.typeScaels = typeScaels; 
-      Obj.Sql = sql;  
-      await arr.push(Obj);
-      if (ind == arrTypeScales.length-1) {
-        result.resolve(arr);
+      var Obj = {}; //создание нового объекта
+      Obj.NameScales = params.NameScales; //доабвление в объект имени весов
+      Obj.typeScaels = typeScaels; //добалвние в объект типа весов
+      await ExecuteQery(sql).then(async res => { //выполнение 
+        Obj.rows = res; //доабвлекние в объеккт результата запроса
+        await arr.push(Obj); //добавление объекта в массив
+      })
+      if (ind == arrTypeScales.length - 1) { //првоерка на последнее выполенение 
+        result.resolve(arr); //доабвление 
       }
     })
-    return result.promise;
+    return result.promise; //возврат результата в promise
+  }
+
+  /* выполнение запроса */
+  function ExecuteQery(sql) {
+    var result = Q.defer(); //создание promise
+    DB.query(sql, async (err, rows) => { //выполнение sql зарпоса
+      result.resolve(rows); //доабвление результата в promise
+    })
+    return result.promise; //возврат результата в promise
+  }
+
+  function CompareDataScales(Arr){
+    
   }
 }

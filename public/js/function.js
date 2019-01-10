@@ -148,8 +148,8 @@ function FillCardsScales() {
   /* получение массы добычи */
   function GetSostavGroupOfVagonsForDay(NameScales){
     var params = {};
-    params.DateTimeStart = $('#datetimeStart').val();
-    params.DateTimeEnd = $('#datetimeEnd').val();
+    params.DateTimeStart = moment($('#datetimeStart').val()).format('YYYY-MM-DD HH:mm');
+    params.DateTimeEnd = moment($('#datetimeEnd').val()).format('YYYY-MM-DD HH:mm');
     params.NameScales = NameScales;
     socket.emit('GetSostavGroupOfVagonsForDay', params, result => {
       console.log(result)
