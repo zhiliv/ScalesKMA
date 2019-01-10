@@ -61,18 +61,29 @@ exports.GetNameScales = callback => {
 
 //TODO
 /* получение  группированных вагонов у составов по дням на весах*/
-exports.GetSostavGroupOfVagonsForDay = async (NameScales, callback) => {
-  var arr = [];
-  var sql = 'SELECT Date(DateTimeOp) as DateOp, time_format(Time(DateTimeOp), "%H:%i") as TimeOp, MAX(NumVagons),  SUM(Mass) FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateOp, TimeOp';
-  await async.each(arrTypeScales, async typeScaels => {
-    var value = [NameScales, typeScaels]; //формирование значений для параметров
-    sql = await DB.format(sql, value); //формирование sql запроса со значениями для параметров
-    var Obj = {};
-    Obj.NameScales = NameScales;
-    Obj.typeScaels = typeScaels;
-    Obj.Sql = sql;
-    console.log(sql)
-    await arr.push(Obj);
+exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
+  FillArr(params).then(res => {
+    callback(res)
   })
-  callback(arr)
+
+/* обход типов весов */
+  function FillArr(params) {
+    var result = Q.defer(); //создание promise
+    var arr = [];//новый массив
+    var sql = 'SELECT date_format(DateTimeOp, "%Y-%m-%d %H:%i") as DateTimeOp, MAX(NumVagons),  SUM(Mass) FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateTimeOp';  //формирование запроса
+    arrTypeScales.forEach(async (typeScaels, ind)=> {
+      var value = await params; //формирование значений для параметров
+      value[3] = await typeScaels;
+      sql = await DB.format(sql, value); //формирование sql запроса со значениями для параметров
+      var Obj = {};
+      /*     Obj.NameScales = NameScales;
+          Obj.typeScaels = typeScaels;  */
+      Obj.Sql = await sql;  
+      await arr.push(Obj);
+      if (ind == arrTypeScales.length-1) {
+        result.resolve(arr);
+      }
+    })
+    return result.promise;
+  }
 }

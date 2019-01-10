@@ -21,7 +21,7 @@ $('#ItemMainNav_Graphics').on('click', LoadFormGraphics()); //при нажит�
 function FillDateTimemainGraphics() {
   /* получение даты начала месяца */
   function GetStartDate() {
-    var date = moment().startOf('month').format('DD.MM.YYYY HH:mm'); //установка формата времени moment
+    var date = moment().add(-1, 'M').startOf('month').format('DD.MM.YYYY HH:mm'); //установка формата времени moment
     return date; //возврат значения
   }
   var datetimeStart = GetStartDate(); //начало месяца
@@ -147,7 +147,11 @@ function FillCardsScales() {
 
   /* получение массы добычи */
   function GetSostavGroupOfVagonsForDay(NameScales){
-    socket.emit('GetSostavGroupOfVagonsForDay', NameScales, result => {
+    var params = [];
+    params.push($('#datetimeStart').val());
+    params.push($('#datetimeEnd').val());
+    params.push(NameScales);
+    socket.emit('GetSostavGroupOfVagonsForDay', params, result => {
       console.log(result)
     })
   }
