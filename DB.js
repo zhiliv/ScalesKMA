@@ -63,14 +63,15 @@ exports.GetNameScales = callback => {
 /* получение  группированных вагонов у составов по дням на весах*/
 exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
   FillArr(params).then(res => { //Обход массива типов весов
-    callback(res) //возврат результата в callback
+    CompareDataScales(res)
+    //callback(res) //возврат результата в callback
   })
 
   /* обход типов весов */
   function FillArr(params) {
     var result = Q.defer(); //создание promise
     var arr = []; //новый массив
-    var sql = 'SELECT date_format(DateTimeOp, "%Y-%m-%d %H:%i") as DateTimeOp, MAX(NumVagons),  SUM(Mass) FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateTimeOp'; //формирование запроса
+    var sql = 'SELECT date_format(DateTimeOp, "%Y-%m-%d %H:%i") as DateTimeOp, MAX(NumVagons) as CountVagons,  SUM(Mass) as Mass FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateTimeOp'; //формирование запроса
     arrTypeScales.forEach(async (typeScaels, ind) => {
       var value = await [params.DateTimeStart, params.DateTimeEnd, params.NameScales, typeScaels]
       sql = await DB.format(sql, value); //формирование sql запроса со значениями для параметров
@@ -78,7 +79,7 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
       Obj.NameScales = params.NameScales; //доабвление в объект имени весов
       Obj.typeScaels = typeScaels; //добалвние в объект типа весов
       await ExecuteQery(sql).then(async res => { //выполнение 
-        Obj.rows = res; //доабвлекние в объеккт результата запроса
+        Obj.List = res; //доабвлекние в объеккт результата запроса
         await arr.push(Obj); //добавление объекта в массив
       })
       if (ind == arrTypeScales.length - 1) { //првоерка на последнее выполенение 
@@ -97,7 +98,32 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
     return result.promise; //возврат результата в promise
   }
 
-  function CompareDataScales(Arr){
-    
+  /* перебор массивов для формирования выходных данных */
+  function CompareDataScales(ArrDataOfScales) {
+    var arrConformity = []; //создаем массив для хранения данных которые соответствуют(брутто /нетто) по времени
+    var arrBrutto = []; //создание массива для хренения веса БРУТТО
+    var arrNetto = []; //создане массива для ранения НЕТТО
+    ArrDataOfScales.forEach(async row => { //ассинхронный обход массива 
+      let typeScaels = row.typeScaels; //объявляем тип весов
+      if (typeScaels == 'brutto') { //првоерка типа весов
+        arrBrutto = row.List; //присвоние данных массиву
+      }
+      if (typeScaels == 'netto') { //првоерка типа весов
+        arrNetto = row.List; //присвоние данных массиву
+      }
+    })
+    arrBrutto.forEach(async (rowBrutto, indBrutto) => {
+      console.log(rowBrutto)
+      var DateOpBrutto = rowBrutto.DateTimeOp;
+      var CountVagonsBrutto = rowBrutto.CountVagons;
+      var MassBrutto = rowBrutto.Mass;
+      arrNetto.forEach(async (rowNetto, indNetto) => {
+        var DateOpNetto = rowNetto.DateTimeOp;
+        var CountVagonsNetto = rowNetto.CountVagons;
+        var MassNetto = rowNetto.Mass;
+        
+      })
+    })
+
   }
 }

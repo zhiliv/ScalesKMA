@@ -147,11 +147,11 @@ function FillCardsScales() {
 
   /* получение массы добычи */
   function GetSostavGroupOfVagonsForDay(NameScales){
-    var params = {};
-    params.DateTimeStart = moment($('#datetimeStart').val()).format('YYYY-MM-DD HH:mm');
-    params.DateTimeEnd = moment($('#datetimeEnd').val()).format('YYYY-MM-DD HH:mm');
-    params.NameScales = NameScales;
-    socket.emit('GetSostavGroupOfVagonsForDay', params, result => {
+    var params = {};  //создание объекта для хранения параметров
+    params.DateTimeStart = moment(new Date($('#datetimeStart').val())).format('YYYY-MM-DD HH:mm');  //дата начала 
+    params.DateTimeEnd = moment(new Date($('#datetimeEnd').val())).format('YYYY-MM-DD HH:mm');  //дата окончания
+    params.NameScales = NameScales; //имя весов 
+    socket.emit('GetSostavGroupOfVagonsForDay', params, result => { //отправить запрос через socket
       console.log(result)
     })
   }
