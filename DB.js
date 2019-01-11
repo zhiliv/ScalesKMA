@@ -64,7 +64,7 @@ exports.GetNameScales = callback => {
 exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
   FillArr(params).then(ArrInitial => { //Обход массива типов весов
     GetArrDate(ArrInitial).then(arrDate => {
-
+      GetArrDateDay(arrDate)
     })
   })
 
@@ -95,30 +95,52 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
     return result.promise; //возврат результата в promise
   }
 
-  /* перебор массивов для формирования выходных данных */
-  async function GetArrDate(List) {
-    var result = Q.defer();
-    var arrDate = [];
-    await List[0].List.forEach(async (rowBrutto, indBrutto) => {
-      await arrDate.push(rowBrutto.DateTimeOp);
-      if (indBrutto == List.length - 1) {
-        result.resolve(arrDate);
+  /* получение массива дат */
+  function GetArrDate(List) {
+    var result = Q.defer(); //создание promise
+    var arrDate = []; //создание масива дляхранения дат
+    var Listdate = List[0].List; //исходный массив дат 
+    Listdate.forEach(async (rowBrutto, indBrutto) => { //обход значений массива
+      await arrDate.push(rowBrutto.DateTimeOp); //добавление в массив строки
+      if (indBrutto == List.length - 1) { //првоерка последней строки
+        result.resolve(arrDate); //добавлние рузльтата в promise
       }
     })
-    return result.promise
+    return result.promise //возврат результата в promise
+  }
+
+  /* получение массива уникальных дней */
+  async function GetArrDateDay(List) {
+    var result = Q.defer(); //создание promise
+    var arrDate = []; //массив для хранения результата
+    await List.forEach(async (row) => { //обход массива
+      var StartDay =  moment(new Date(row)).startOf('day').format('YYYY-MM-DD HH:mm'); //начало дня
+      var EndDay =  moment(new Date(row)).endOf('day').format('YYYY-MM-DD HH:mm'); //начало дня 
+      var ind = arrDate.map(row => {
+        return row.StartDay
+      }).indexOf(StartDay);//поиск в массиве элементов
+      if (ind == -1) {  
+        var Obj = {};
+        Obj.StartDay = StartDay;
+        Obj.EndDay = EndDay;
+        await arrDate.push(Obj)
+        //console.log(StartDay)
+      }
+    })
+    console.log(arrDate)
   }
 
 
 
 
+  /*   var s =arrDate.indexOf(date => {
+      date =  moment(new Date(date)).startOf('day').format('YYYY-MM-DD HH:mm');
+      date == StartDay;
+      console.log('ss')
+    }) */
 
 
-
-
-
-
-
-    /*     ArrDataOfScales.forEach(async row => { //ассинхронный обход массива 
+  /*     ArrDataOfScales.forEach(async row => { //ассинхронный обход массива 
       NameScales = row.NameScales; //имя весов
       let typeScaels = row.typeScaels; //объявляем тип весов
       arrBrutto = row.List; //присвоние данных массиву
@@ -139,11 +161,34 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
  */
 
 
-    /*       arrNetto.filter(rowNetto => {
+  /*       arrNetto.filter(rowNetto => {
+          var Obj = {};//создание объекта для хранения данных
+          var DateOpNetto = moment(rowNetto.DateTimeOp).format('YYYY-MM-DD HH:mm'); //дата операции Нетто
+          var CountVagonsNetto = rowNetto.CountVagons; //количество вагонов в составе Нетто
+          var MassNetto = rowNetto.Mass; //масса состава Нетто
+          for (var i = 2; i <= 12; i++) { //цикл для увеличения времени
+            var FindDateTime = moment(DateOpNetto).add(i, 'minutes').format('YYYY-MM-DD HH:mm');
+            if((FindDateTime == DateOpBrutto) && (CountVagonsNetto == CountVagonsBrutto)){
+              Obj.DatetimeOp = DateOpBrutto;
+              Obj.MassBrutto = MassBrutto;
+              Obj.MasNetto = MassNetto;
+              arrConformity.push(Obj);
+              console.log(DateOpBrutto)
+              Status = true;
+              break;
+            }
+          }
+        }) */
+
+
+
+
+  /*        arrNetto.forEach(async (rowNetto, indNetto) => {
             var Obj = {};//создание объекта для хранения данных
             var DateOpNetto = moment(rowNetto.DateTimeOp).format('YYYY-MM-DD HH:mm'); //дата операции Нетто
             var CountVagonsNetto = rowNetto.CountVagons; //количество вагонов в составе Нетто
             var MassNetto = rowNetto.Mass; //масса состава Нетто
+            
             for (var i = 2; i <= 12; i++) { //цикл для увеличения времени
               var FindDateTime = moment(DateOpNetto).add(i, 'minutes').format('YYYY-MM-DD HH:mm');
               if((FindDateTime == DateOpBrutto) && (CountVagonsNetto == CountVagonsBrutto)){
@@ -156,31 +201,8 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
                 break;
               }
             }
-          }) */
-
-
-
-
-    /*        arrNetto.forEach(async (rowNetto, indNetto) => {
-              var Obj = {};//создание объекта для хранения данных
-              var DateOpNetto = moment(rowNetto.DateTimeOp).format('YYYY-MM-DD HH:mm'); //дата операции Нетто
-              var CountVagonsNetto = rowNetto.CountVagons; //количество вагонов в составе Нетто
-              var MassNetto = rowNetto.Mass; //масса состава Нетто
-              
-              for (var i = 2; i <= 12; i++) { //цикл для увеличения времени
-                var FindDateTime = moment(DateOpNetto).add(i, 'minutes').format('YYYY-MM-DD HH:mm');
-                if((FindDateTime == DateOpBrutto) && (CountVagonsNetto == CountVagonsBrutto)){
-                  Obj.DatetimeOp = DateOpBrutto;
-                  Obj.MassBrutto = MassBrutto;
-                  Obj.MasNetto = MassNetto;
-                  arrConformity.push(Obj);
-                  console.log(DateOpBrutto)
-                  Status = true;
-                  break;
-                }
-              }
-            })  
-    }) */
-    //callback(arrConformity)
+          })  
+  }) */
+  //callback(arrConformity)
 
 }
