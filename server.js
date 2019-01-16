@@ -24,12 +24,12 @@ moment.locale('ru'); //установка локации для moment.js
 
 app.use('/public', express.static('public')); //используем папку для хранения статичесих фалов
 
-/* обработка открытия страницы */
+/* ОБРАБОТКА ОТКРЫТИЯ СТРАНИЦЫ */
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/index.html'); //при открытии страницы index.html
 });
 
-/* запуск сервера */
+/* ЗАПУСК СЕРВЕРА */
 exports.StartServer = function() {
 	server.listen(servers.Port, servers.Adress, () => {
 		//запускаем сервер с адресом и портом
@@ -57,7 +57,7 @@ exports.StartServer = function() {
 	});
 };
 
-/* запуск парсинга */
+/* ЗАПУСК ПАРСИНГА */
 function StartParse() {
 	DB.GetNameScales(NameScales => {
 		//получение имен весов
@@ -68,7 +68,7 @@ function StartParse() {
 	});
 }
 
-/* обработка сокетов */
+/* ОБРАБОТКА СОКЕТОВ */
 io.on('connection', socket => {
 	/* получение всех имен весов */
 	socket.on('GetNameScales', callback => {

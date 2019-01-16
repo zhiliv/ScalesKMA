@@ -4,7 +4,7 @@ var socket = io(); //создание сокета
 
 $.datetimepicker.setLocale('ru'); //установка локации для datitimepicker
 
-/* при загрузке страницы */
+/* ПРИ ЗАГРУЗКЕ СТРАНИЦЫ */
 $(window).on('load', () => {
 	$('#Data').show('', () => {
 		$('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 64); //установка высоты для блока ListScalesDataMass
@@ -14,10 +14,10 @@ $(window).on('load', () => {
 	FillDateTimemainGraphics(); //заполнение дат
 });
 
-/* нажатие на кнопку "График" */
+/* НАЖАТИЕ НА КНОПКУ "ГРАФИК" */
 $('#ItemMainNav_Graphics').on('click', LoadFormGraphics()); //при нажитии на кнопку "Применить" - загрузить форму с графиком
 
-/* заполнение дат начала и текущию дату в гавном кграфике */
+/* ЗАПОЛНЕНИЕ ДАТ НАЧАЛА И ТЕКУЩИЮ ДАТУ В ГАВНОМ КГРАФИКЕ */
 function FillDateTimemainGraphics() {
 	/* получение даты начала месяца */
 	function GetStartDate() {
@@ -29,7 +29,7 @@ function FillDateTimemainGraphics() {
 	}
 	var datetimeStart = GetStartDate(); //начало месяца
 
-	/* получение текущей даты */
+	/* ПОЛУЧЕНИЕ ТЕКУЩЕЙ ДАТЫ */
 	function GetEndtDate() {
 		var date = moment().format('DD.MM.YYYY HH:mm'); //установка даты в нудном формате
 		return date; //возврат значения
@@ -51,7 +51,7 @@ function FillDateTimemainGraphics() {
 			$(el).addClass('active'); //добавление класса для label
 		});
 
-	/* установка типа datetimepicker для input */
+	/* УСТАНОВКА ТИПА DATETIMEPICKER ДЛЯ INPUT */
 	function SetDatePimePicker() {
 		$('#datetimeStart').datetimepicker({
 			timepicker: true,
@@ -66,28 +66,28 @@ function FillDateTimemainGraphics() {
 	SetDatePimePicker(); //установка datetimepicker для полей input
 }
 
-/* определение высоты #ListScalesDataMass */
+/* ОПРЕДЕЛЕНИЕ ВЫСОТЫ #LISTSCALESDATAMASS */
 function GetHeightListScalesDataMass() {
 	var result = 0; //результат
 	var HeightNavigate = 0; //высота навигации
 	var HeightFooter = 0; //высота футера
 	var HeightBody = 0; //получение высоты окна
 
-	/* получение высота меню навигации */
+	/* ПОЛУЧЕНИЕ ВЫСОТА МЕНЮ НАВИГАЦИИ */
 	function GetHeightNavigate() {
 		var height = $('#MainNavigateMenu').height(); //получение высоты элемента
 		return height; //возврат результата
 	}
 	HeightNavigate = GetHeightNavigate(); //высота блока навигации
 
-	/* получение высоты footer */
+	/* ПОЛУЧЕНИЕ ВЫСОТЫ FOOTER */
 	function GetHeightFooter() {
 		var height = $('.page-footer').height(); //получение высоты футера
 		return height; //возрат результата
 	}
 	HeightFooter = GetHeightFooter(); //высота блока footer
 
-	/* получение высоты body */
+	/* ПОЛУЧЕНИЕ ВЫСОТЫ BODY */
 	function GetHeightBody() {
 		var height = $('body').height(); //получение высоты body
 		return height; //возврат результата
@@ -99,7 +99,7 @@ function GetHeightListScalesDataMass() {
 	return result; //возврат результата
 }
 
-/* после заггрузки главной страницы */
+/* ПОСЛЕ ЗАГРУЗКИ ГЛАВНОЙ СТРАНИЦЫ */
 function OnLoadIndex() {
 	$('#ItemMainNav_Graphics')
 		.parent('li')
@@ -112,7 +112,7 @@ function OnLoadIndex() {
 	FillCardsScales(); //заполнение карточек весов
 }
 
-/* загрузка формы Графики */
+/* ЗАГРУЗКА ФОРМЫ ГРАФИКИ */
 function LoadFormGraphics() {
 	$('#MainData').load('public/Forms/mainChart.html', () => {
 		//загрузка файла html
@@ -120,7 +120,7 @@ function LoadFormGraphics() {
 	});
 }
 
-/* заполнение каточек весов */
+/* ЗАПОЛНЕНИЕ КАРТОЧЕК ВЕСОВ */
 function FillCardsScales() {
 	$('#ListScalesDataMass .scrollbar-primary').empty(); //очистка блока
 	socket.emit('GetNameScales', list => {
@@ -133,7 +133,7 @@ function FillCardsScales() {
 		});
 	});
 
-	/* ганерания карточки */
+	/* ГАНЕРАЦИЯ КАРТОЧКИ */
 	function Card(NameScales, ind) {
 		$('<div>', {
 			class: 'col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12',
@@ -154,11 +154,13 @@ function FillCardsScales() {
 		}).appendTo($('.scrollbar-primary  .card-body')[ind]); //создание заголовка с именем весов
 	}
 
-	/* получение массы добычи */
+	/* ПОЛУЧЕНИЕ МАССЫ ДОБЫЧИ */
 	function GetSostavGroupOfVagonsForDay(NameScales) {
 		var params = {}; //создание объекта для хранения параметров
-		params.DateTimeStart = moment(new Date($('#datetimeStart').val())).format('YYYY-MM-DD HH:mm'); //дата начала
-		params.DateTimeEnd = moment(new Date($('#datetimeEnd').val())).format('YYYY-MM-DD HH:mm'); //дата окончания
+		var DateTimeStart = new Date($('#datetimeStart').val()); //добавлегние в переменную значения жаты начала
+		params.DateTimeStart = moment(new Date(DateTimeStart)).format('YYYY-MM-DD HH:mm'); //дата начала
+		var DateTimeEnd = new Date(Date($('#datetimeEnd').val())); //добавление переменной со значением даты
+		params.DateTimeEnd = moment(DateTimeEnd).format('YYYY-MM-DD HH:mm'); //дата окончания
 		params.NameScales = NameScales; //имя весов
 		socket.emit('GetSostavGroupOfVagonsForDay', params, result => {
 			//отправить запрос через socket
