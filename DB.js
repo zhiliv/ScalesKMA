@@ -55,7 +55,9 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 	FillArr(params).then(ArrInitial => {
 		//Обход массива типов весов
 		GetArrDate(ArrInitial).then(arrDate => {
-			GetArrDateDay(arrDate, params.DateTimeEnd);
+			GetArrDateDay(arrDate, params.DateTimeEnd).then(ResArrDate => {
+				callback(ResArrDate);
+			});
 		});
 	});
 
@@ -106,13 +108,14 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 	}
 
 	/* ПОЛУЧЕНИЕ МАССИВА УНИКАЛЬНЫХ ДНЕЙ*/
-	async function GetArrDateDay(List, DateTimeEnd) {
+	async function GetArrDateDay(List, DateTimeEnd, DateTimeStart) {
 		var result = Q.defer(); //создание promise
 		var arrDate = []; //массив для хранения результата
+		var BeginDate = ''; //дата начала
 		await List.forEach(async (row, indRow) => {
 			//обход массива
 			if (indRow == 0) {
-				var BeginDate = moment(new Date(row)).format('YYYY-MM-DD HH:mm'); //начало дня
+				BeginDate = moment(new Date(row)).format('YYYY-MM-DD HH:mm'); //начало дня
 			}
 			var EndDate = moment(new Date(row))
 				.endOf('day')
@@ -130,17 +133,24 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 				Obj.StartDay = StartDay; //добавление даты начала
 				Obj.EndDay = EndDate; //добавление даты окончания
 				await arrDate.push(Obj); //добавление объекта в массив
-				arrDate = ChangeDateRow(arrDate, BeginDate, DateTimeEnd);
+			}
+			if (indRow == List.length - 1) {
+				//проверка на последнюю запись в массиве
+				arrDate = ChangeDateRow(arrDate, BeginDate, DateTimeEnd); //переформирование объектов массива
+				result.resolve(arrDate); //добавление результата в promise
 			}
 		});
-
-		/* ДОБАВЛЕНИЕ ДАТЫ НАЧАЛА И КОНЦА В ПЕРВУЮ И ПОСЕЛДНЮЮ СТРОКУ */
-		function ChangeDateRow(arrDate, BeginDate, EndDate) {
-			arrDate[0].StartDay = BeginDate; //изменение даты начала в первой строке
-			arrDate[arrDate.length - 1].EndDay = EndDate; //зименение даты окончания в последней строке
-			return arrDate; //возврат результата
-		}
+		return result.promise; //возврат результата в promise
 	}
+
+	/* ДОБАВЛЕНИЕ ДАТЫ НАЧАЛА И КОНЦА В ПЕРВУЮ И ПОСЕЛДНЮЮ СТРОКУ */
+	function ChangeDateRow(arrDate, BeginDate, EndDate) {
+		arrDate[0].StartDay = BeginDate; //изменение даты начала в первой строке
+		arrDate[arrDate.length - 1].EndDay = EndDate; //зименение даты окончания в последней строке
+		return arrDate; //возврат результата
+	}
+
+	/*  */
 };
 
 /*   var s =arrDate.indexOf(date => {
