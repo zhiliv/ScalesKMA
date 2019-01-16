@@ -1,0 +1,37 @@
+{
+  "name": "scaleskma",
+  "version": "1.0.0",
+  "description": "Парсер XML весов и вывод графиков добычи",
+  "main": "index.js",
+  "dependencies": {
+    "async": "^2.6.1",
+    "bootstrap": "^4.2.1",
+    "cli-color": "^1.4.0",
+    "console-clear": "^1.1.1",
+    "express": "^4.16.4",
+    "jquery": "^3.3.1",
+    "lodash": "^4.17.11",
+    "moment": "^2.23.0",
+    "mysql": "^2.16.0",
+    "nodemon": "^1.18.9",
+    "npm-check": "^5.9.0",
+    "q": "^1.5.1",
+    "socket.io": "^2.2.0",
+    "xml2js": "^0.4.19"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhiliv/ScalesKMA.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zhiliv/ScalesKMA/issues"
+  },
+  "homepage": "https://github.com/zhiliv/ScalesKMA#readme"
+}
