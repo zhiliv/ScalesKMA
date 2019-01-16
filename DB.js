@@ -56,7 +56,9 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 		//Обход массива типов весов
 		GetArrDate(ArrInitial).then(arrDate => {
 			GetArrDateDay(arrDate, params.DateTimeEnd).then(ResArrDate => {
-				callback(ResArrDate);
+				FillArrDate(ResArrDate, params.NameScales).then(res => {
+					callback(res);
+				});
 			});
 		});
 	});
@@ -68,6 +70,68 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 		var sql =
 			'SELECT date_format(DateTimeOp, "%Y-%m-%d %H:%i") as DateTimeOp, MAX(NumVagons) as CountVagons,  SUM(Mass) as Mass FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateTimeOp'; //формирование запроса
 		var value = [params.DateTimeStart, params.DateTimeEnd, params.NameScales, 'brutto'];
+		sql = await DB.format(sql, value); //формирование sql запроса со значениями для параметров
+		var Obj = {}; //создание нового объекта
+		Obj.NameScales = params.NameScales; //доабвление в объект имени весов
+		Obj.typeScaels = 'brutto'; //добалвние в объект типа весов
+		await ExecuteQery(sql).then(async res => {
+			//выполнение
+			Obj.List = res; //доабвлекние в объеккт результата запроса
+			await arr.push(Obj); //добавление объекта в массив
+		});
+		await result.resolve(arr); //доабвление
+		return result.promise; //возврат результата в promise
+	}
+
+	/* ОБХОД МАССИВА С ДАТАМИ */
+	function FillArrDate(ArrDate, NameScales) {
+		var result = Q.defer();
+		var res = {};
+		var arrBrutto = [];
+		var arrNetto = [];
+		ArrDate.forEach(async (row, ind) => {
+			await GetDataBruttoOfPeriod(row.StartDay, row.EndDay, NameScales).then(async bruttoDate => {
+				await arrBrutto.push(bruttoDate);
+			});
+			await GetDataBruttoOfPeriod(row.StartDay, row.EndDay, NameScales).then(async NettoDate => {
+				await arrNetto.push(NettoDate);
+			});
+			if (ind == ArrDate.length - 1) {
+				res.Brutto = arrBrutto;
+				res.Netto = arrNetto;
+				result.resolve(res);
+			}
+		});
+		return result.promise;
+	}
+
+	/* ПОЛУЧЕНИЕ ДАННЫХ С ВЕСОВ БРУТТО ЗА ПЕРИОД */
+	async function GetDataBruttoOfPeriod(DateTimeStart, DateTimeEnd, NameScales) {
+		var result = Q.defer(); //создание promise
+		var arr = []; //новый массив
+		var sql =
+			'SELECT date_format(DateTimeOp, "%Y-%m-%d %H:%i") as DateTimeOp, MAX(NumVagons) as CountVagons,  SUM(Mass) as Mass FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateTimeOp'; //формирование запроса
+		var value = [DateTimeStart, DateTimeEnd, NameScales, 'brutto'];
+		sql = await DB.format(sql, value); //формирование sql запроса со значениями для параметров
+		var Obj = {}; //создание нового объекта
+		Obj.NameScales = params.NameScales; //доабвление в объект имени весов
+		Obj.typeScaels = 'brutto'; //добалвние в объект типа весов
+		await ExecuteQery(sql).then(async res => {
+			//выполнение
+			Obj.List = res; //доабвлекние в объеккт результата запроса
+			await arr.push(Obj); //добавление объекта в массив
+		});
+		await result.resolve(arr); //доабвление
+		return result.promise; //возврат результата в promise
+	}
+
+	/* ПОЛУЧЕНИЕ ДАННЫХ С ВЕСОВ БРУТТО ЗА ПЕРИОД */
+	async function GetDataNettoOfPeriod(DateTimeStart, DateTimeEnd, NameScales) {
+		var result = Q.defer(); //создание promise
+		var arr = []; //новый массив
+		var sql =
+			'SELECT date_format(DateTimeOp, "%Y-%m-%d %H:%i") as DateTimeOp, MAX(NumVagons) as CountVagons,  SUM(Mass) as Mass FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateTimeOp'; //формирование запроса
+		var value = [DateTimeStart, DateTimeEnd, NameScales, 'netto'];
 		sql = await DB.format(sql, value); //формирование sql запроса со значениями для параметров
 		var Obj = {}; //создание нового объекта
 		Obj.NameScales = params.NameScales; //доабвление в объект имени весов
