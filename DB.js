@@ -36,7 +36,7 @@ function handleDisconnect(client) {
 /* ОБРАБОТКА ОШИБОК ЗАПРОСОВ */
 function DefineError(err, FuncName) {
 	if (err)
-		throw console.log(clc.red(moment().format('LLL') + ' Произошла ошибка:' + err + '\n' + 'в функции: ' + FuncName));
+		throw console.log(clc.red(moment().format('LLL') + ' Произошла ошибка:' + err + '\n' + 'в функции: ' + FuncName)); //вывод сообщения
 }
 
 /* ПОЛУЧЕНИЕ ИМЕН ВЕСОВ */
@@ -55,13 +55,19 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 	FillArr(params).then(ArrInitial => {
 		//Обход массива типов весов
 		GetArrDate(ArrInitial).then(arrDate => {
+			//получение массива дат(по дням)
 			GetArrDateDay(arrDate, params.DateTimeEnd).then(ResArrDate => {
+				//получение массива уникальных дней
 				FillArrDate(ResArrDate, params.NameScales).then(res => {
+					//объод массива с уникальными днями
 					callback(res);
 				});
 			});
 		});
 	});
+
+	/* Проверка соответствия составо и времени */
+	function CheckSostavOfTime() {}
 
 	/* ОБХОД ТИПОВ ВЕСОВ */
 	async function FillArr(params) {
@@ -85,20 +91,24 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 
 	/* ОБХОД МАССИВА С ДАТАМИ */
 	function FillArrDate(ArrDate, NameScales) {
-		var result = Q.defer();
-		var res = {};
-		var arrBrutto = [];
-		var arrNetto = [];
+		var result = Q.defer(); //создание promise
+		var res = {}; //создание объекта для хранения разуьтата
+		var arrBrutto = []; //массив для хранения результата "Брутто"
+		var arrNetto = []; //массив для хранения результата "Нетто"
 		ArrDate.forEach(async (row, ind) => {
+			//объод массива дат
 			await GetDataBruttoOfPeriod(row.StartDay, row.EndDay, NameScales).then(async bruttoDate => {
-				await arrBrutto.push(bruttoDate);
+				//получение данных по "Брутто"
+				await arrBrutto.push(bruttoDate); //добавление результата в массив
 			});
-			await GetDataBruttoOfPeriod(row.StartDay, row.EndDay, NameScales).then(async NettoDate => {
-				await arrNetto.push(NettoDate);
+			await GetDataNettoOfPeriod(row.StartDay, row.EndDay, NameScales).then(async NettoDate => {
+				//получение данных по "Нетто"
+				await arrNetto.push(NettoDate); //добавление результата в массив
 			});
 			if (ind == ArrDate.length - 1) {
-				res.Brutto = arrBrutto;
-				res.Netto = arrNetto;
+				//проверка на последиее значение массива
+				res.Brutto = arrBrutto; //добавление в объект массива "Брутто"
+				res.Netto = arrNetto; //добавление в объект массива "Нетто"
 				result.resolve(res);
 			}
 		});
@@ -116,6 +126,8 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 		var Obj = {}; //создание нового объекта
 		Obj.NameScales = params.NameScales; //доабвление в объект имени весов
 		Obj.typeScaels = 'brutto'; //добалвние в объект типа весов
+		Obj.DateTimeStart = DateTimeStart; //дата начала
+		Obj.DateTimeEnd = DateTimeEnd; //дата окончания
 		await ExecuteQery(sql).then(async res => {
 			//выполнение
 			Obj.List = res; //доабвлекние в объеккт результата запроса
@@ -136,6 +148,8 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 		var Obj = {}; //создание нового объекта
 		Obj.NameScales = params.NameScales; //доабвление в объект имени весов
 		Obj.typeScaels = 'brutto'; //добалвние в объект типа весов
+		Obj.DateTimeStart = DateTimeStart; //дата начала
+		Obj.DateTimeEnd = DateTimeEnd; //дата окончания
 		await ExecuteQery(sql).then(async res => {
 			//выполнение
 			Obj.List = res; //доабвлекние в объеккт результата запроса
