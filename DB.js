@@ -6,6 +6,7 @@ var mysql = require('mysql'), //подключение библиотеки дл
 	Q = require('q'), //подклчение бибилиотеки для работы с promise
 	moment = require('moment'), //подключение momentjs
 	_ = require('lodash'), //библиотека для работы с массивами
+	underscore = require('underscore'), //библиотека для работы с массивами
 	async = require('async'); //библиотека для асинхронной работы
 moment.locale('ru'); //указание локации у moment js
 
@@ -60,10 +61,11 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 				//получение массива уникальных дней
 				FillArrDate(ResArrDate, params.NameScales).then(DataScales => {
 					//объод массива с уникальными днями
-					CheckSostavOfTime(DataScales).then(res => {
+					CheckSostavOfTime(DataScales);
+					/* 					CheckSostavOfTime(DataScales).then(res => {
 						console.log('finish');
 						callback(res);
-					});
+					}); */
 				});
 			});
 		});
@@ -71,55 +73,51 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 
 	/* Проверка соответствия составо и времени */
 	function CheckSostavOfTime(DataScales) {
-		var result = Q.defer();
+		console.time('Time this');
+		//var result = Q.defer();
 		var arrResult = [];
 		var arrBrutto = DataScales.Brutto;
 		var arrNetto = DataScales.Netto;
-		arrBrutto.forEach(async (rowBrutto, indRowBrutto) => {
-			var DateStartBrutto = rowBrutto[0].DateTimeStart;
-			var FndInd = -1;
-			FndInd = arrNetto.findIndex(rowNetto => {
-				var DateStartNetto = rowNetto[0].DateTimeStart;
-				if (DateStartNetto == DateStartBrutto) {
-					return true;
+		//console.log('​CheckSostavOfTime -> arrNetto', arrNetto);
+		underscore.each(arrBrutto, async (rowBrutto, indRowBrutto) => {
+			var DateStartBrutto = rowBrutto.DateTimeStart;
+			var ConformityNetto = underscore.findWhere(arrNetto, { DateTimeStart: DateStartBrutto });
+			var ListBrutto = rowBrutto.List;
+			var ListNetto = ConformityNetto.List;
+			underscore.each(ListBrutto, (rowListBrutto, indLitsBrutto) => {
+				var DateTimeOpBruttoCompare = rowListBrutto.DateTimeOp;
+				for (var tmr = 2; tmr <= 12; tmr++) {
+					var DateOpNettoAdd = moment(DateTimeOpBruttoCompare)
+						.add(tmr, 'minutes')
+						.format('YYYY-MM-DD HH:mm');
+					var ConformityValue = underscore.findWhere(ListNetto, { DateTimeOp: DateOpNettoAdd });
+					if (ConformityValue != undefined) {
+						var Mass = GetMass(rowListBrutto.Mass, ConformityValue.Mass);
+						var Obj = {};
+						Obj.Mass = Mass;
+						Obj.NameScales = ConformityValue.NameScales;
+						Obj.Date = moment(ConformityValue.DateTimeOp).format('YYYY-MM-DD');
+						arrResult.push(Obj);
+						break;
+					}
 				}
 			});
-
-			if (FndInd != -1) {
-				//console.log('ind', FndInd);
-				var ListBrutto = rowBrutto[0].List;
-				var ListNetto = arrNetto[FndInd][0].List;
-				ListBrutto.forEach((rowListBrutto, indLitBrutto) => {
-					var DateTimeOpBruttoCompare = rowListBrutto.DateTimeOp;
-					var CountVagonsBrutto = rowListBrutto.CountVagons;
-					var FndIndListRow = -1;
-					FndIndListRow = ListNetto.findIndex(rowListNetto => {
-						var DateTimeOpNettoCompare = rowListNetto.DateTimeOp;
-						var CountVagonsNetto = rowListNetto.CountVagons;
-						//console.log('​CheckSostavOfTime -> rowListNetto', rowListNetto);
-						for (var tmr = 2; tmr <= 12; tmr++) {
-							var DateOpNettoAdd = moment(DateTimeOpNettoCompare)
-								.add(tmr, 'minutes')
-								.format('YYYY-MM-DD HH:mm');
-							if (DateTimeOpBruttoCompare == DateOpNettoAdd && CountVagonsBrutto == CountVagonsNetto) {
-								return true;
-							}
-						}
-					});
-					if (FndIndListRow != -1) {
-						var Obj = {};
-						Obj.Brutto = rowListBrutto;
-						Obj.Netto = ListNetto[FndIndListRow];
-						console.log(Obj);
-						arrResult.push(Obj);
-					}
-				});
-			}
-			if (indRowBrutto == arrBrutto.length - 1) {
-				result.resolve(arrResult);
-			}
 		});
-		return result.promise;
+		console.timeEnd('Time this');
+		callback(arrResult);
+	}
+
+	function GetMass(Brutto, Netto) {
+		var result = 0;
+		if (Brutto == 0) {
+			result = 0;
+		} else {
+			result = Brutto - Netto;
+			if (result < 0) {
+				result = 0;
+			}
+		}
+		return result;
 	}
 
 	/* ОБХОД ТИПОВ ВЕСОВ */
@@ -185,9 +183,8 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 		await ExecuteQery(sql).then(async res => {
 			//выполнение
 			Obj.List = res; //доабвлекние в объеккт результата запроса
-			await arr.push(Obj); //добавление объекта в массив
 		});
-		await result.resolve(arr); //доабвление
+		await result.resolve(Obj); //доабвление
 		return result.promise; //возврат результата в promise
 	}
 
@@ -207,9 +204,8 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 		await ExecuteQery(sql).then(async res => {
 			//выполнение
 			Obj.List = res; //доабвлекние в объеккт результата запроса
-			await arr.push(Obj); //добавление объекта в массив
 		});
-		await result.resolve(arr); //доабвление
+		await result.resolve(Obj); //доабвление
 		return result.promise; //возврат результата в promise
 	}
 
@@ -281,73 +277,4 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 		arrDate[arrDate.length - 1].EndDay = EndDate; //зименение даты окончания в последней строке
 		return arrDate; //возврат результата
 	}
-
-	/*  */
 };
-
-/*   var s =arrDate.indexOf(date => {
-        date =  moment(new Date(date)).startOf('day').format('YYYY-MM-DD HH:mm');
-        date == StartDay;
-        console.log('ss')
-      }) */
-
-/*     ArrDataOfScales.forEach(async row => { //ассинхронный обход массива 
-      NameScales = row.NameScales; //имя весов
-      let typeScaels = row.typeScaels; //объявляем тип весов
-      arrBrutto = row.List; //присвоние данных массиву
-    });
-    arrBrutto.forEach(async (rowBrutto, indBrutto) => { //обход знаений массива Брутто
-      var DateOpBrutto = moment(rowBrutto.DateTimeOp).format('YYYY-MM-DD HH:mm'); //дата операции Брутто
-      var CountVagonsBrutto = rowBrutto.CountVagons; //количество вагонов Брутто
-      var MassBrutto = rowBrutto.Mass; //Масса состава брутто
-      var Status = false; //указывает былли ли добавлены данные в массив соответствия
-      for (var i = 2; i <= 12; i++) { //цикл для увеличения времени
-        var t = arrNetto.findIndex(rowNetto => {
-          var DateOpNetto = moment(rowNetto.DateTimeOp).format('YYYY-MM-DD HH:mm'); //дата операции Нетто
-          var FindDateTime = moment(DateOpNetto).add(i, 'minutes').format('YYYY-MM-DD HH:mm');
-          DateOpNetto == FindDateTime;
-        })
-        console.log(t)
-      }
- */
-
-/*       arrNetto.filter(rowNetto => {
-            var Obj = {};//создание объекта для хранения данных
-            var DateOpNetto = moment(rowNetto.DateTimeOp).format('YYYY-MM-DD HH:mm'); //дата операции Нетто
-            var CountVagonsNetto = rowNetto.CountVagons; //количество вагонов в составе Нетто
-            var MassNetto = rowNetto.Mass; //масса состава Нетто
-            for (var i = 2; i <= 12; i++) { //цикл для увеличения времени
-              var FindDateTime = moment(DateOpNetto).add(i, 'minutes').format('YYYY-MM-DD HH:mm');
-              if((FindDateTime == DateOpBrutto) && (CountVagonsNetto == CountVagonsBrutto)){
-                Obj.DatetimeOp = DateOpBrutto;
-                Obj.MassBrutto = MassBrutto;
-                Obj.MasNetto = MassNetto;
-                arrConformity.push(Obj);
-                console.log(DateOpBrutto)
-                Status = true;
-                break;
-              }
-            }
-          }) */
-
-/*        arrNetto.forEach(async (rowNetto, indNetto) => {
-              var Obj = {};//создание объекта для хранения данных
-              var DateOpNetto = moment(rowNetto.DateTimeOp).format('YYYY-MM-DD HH:mm'); //дата операции Нетто
-              var CountVagonsNetto = rowNetto.CountVagons; //количество вагонов в составе Нетто
-              var MassNetto = rowNetto.Mass; //масса состава Нетто
-              
-              for (var i = 2; i <= 12; i++) { //цикл для увеличения времени
-                var FindDateTime = moment(DateOpNetto).add(i, 'minutes').format('YYYY-MM-DD HH:mm');
-                if((FindDateTime == DateOpBrutto) && (CountVagonsNetto == CountVagonsBrutto)){
-                  Obj.DatetimeOp = DateOpBrutto;
-                  Obj.MassBrutto = MassBrutto;
-                  Obj.MasNetto = MassNetto;
-                  arrConformity.push(Obj);
-                  console.log(DateOpBrutto)
-                  Status = true;
-                  break;
-                }
-              }
-            })  
-    }) */
-//callback(arrConformity)
