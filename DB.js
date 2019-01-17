@@ -61,63 +61,89 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 				//получение массива уникальных дней
 				FillArrDate(ResArrDate, params.NameScales).then(DataScales => {
 					//объод массива с уникальными днями
-					CheckSostavOfTime(DataScales);
-					/* 					CheckSostavOfTime(DataScales).then(res => {
-						console.log('finish');
-						callback(res);
-					}); */
+					CheckSostavOfTime(DataScales).then(result => {
+						callback(result); //возврат результата в callback
+					});
 				});
 			});
 		});
 	});
 
-	/* Проверка соответствия составо и времени */
+	/* ПРОВЕРКА СООТВЕТСТВИЯ СОСТАВF И ВРЕМЕНИ */
 	function CheckSostavOfTime(DataScales) {
-		console.time('Time this');
-		//var result = Q.defer();
-		var arrResult = [];
-		var arrBrutto = DataScales.Brutto;
-		var arrNetto = DataScales.Netto;
-		//console.log('​CheckSostavOfTime -> arrNetto', arrNetto);
+		var result = Q.defer(); //создние promise
+		var arrResult = []; //создание массива
+		var arrBrutto = DataScales.Brutto; //массив "Нетто"
+		var arrNetto = DataScales.Netto; //массив "Брутто"
 		underscore.each(arrBrutto, async (rowBrutto, indRowBrutto) => {
-			var DateStartBrutto = rowBrutto.DateTimeStart;
-			var ConformityNetto = underscore.findWhere(arrNetto, { DateTimeStart: DateStartBrutto });
-			var ListBrutto = rowBrutto.List;
-			var ListNetto = ConformityNetto.List;
-			underscore.each(ListBrutto, (rowListBrutto, indLitsBrutto) => {
-				var DateTimeOpBruttoCompare = rowListBrutto.DateTimeOp;
+			//объод массива
+			var DateStartBrutto = rowBrutto.DateTimeStart; //дата начала
+			var ConformityNetto = underscore.findWhere(arrNetto, { DateTimeStart: DateStartBrutto }); //найденный эелмент "Нетто" по времени
+			var ListBrutto = rowBrutto.List; //список отгрузок по времени "Брутто"
+			var ListNetto = ConformityNetto.List; //список отгрузок по времени "Нетто"
+			underscore.each(ListBrutto, rowListBrutto => {
+				//обход массива строк "Нетто"
+				var DateTimeOpBruttoCompare = rowListBrutto.DateTimeOp; //дата для сравнения
 				for (var tmr = 2; tmr <= 12; tmr++) {
+					//цикл для добавления времени
 					var DateOpNettoAdd = moment(DateTimeOpBruttoCompare)
 						.add(tmr, 'minutes')
-						.format('YYYY-MM-DD HH:mm');
-					var ConformityValue = underscore.findWhere(ListNetto, { DateTimeOp: DateOpNettoAdd });
+						.format('YYYY-MM-DD HH:mm'); //добавление 1 минуты к дате
+					var ConformityValue = underscore.findWhere(ListNetto, { DateTimeOp: DateOpNettoAdd }); //проверка времени и нахождение элемента
 					if (ConformityValue != undefined) {
-						var Mass = GetMass(rowListBrutto.Mass, ConformityValue.Mass);
-						var Obj = {};
-						Obj.Mass = Mass;
-						Obj.NameScales = ConformityValue.NameScales;
-						Obj.Date = moment(ConformityValue.DateTimeOp).format('YYYY-MM-DD');
-						arrResult.push(Obj);
-						break;
+						//проверка элемента на существование
+						var Mass = GetMass(rowListBrutto.Mass, ConformityValue.Mass); //разницы БРУТТО-НЕТТО
+						var Obj = {}; //создание объекта
+						Obj.Mass = Mass; //добавление суммы массы в объект
+						Obj.NameScales = rowBrutto.NameScales; //добавление имени весов в объект
+						Obj.Date = moment(ConformityValue.DateTimeOp).format('YYYY-MM-DD'); //добавление даты в объект
+						arrResult.push(Obj); //добавление объекта в массив
+						break; //прервать цикл for
 					}
 				}
 			});
 		});
-		console.timeEnd('Time this');
-		callback(arrResult);
+		result.resolve(GetArrResult(arrResult)); //добавление результата в promise
+		return result.promise; //возврат результата в promise
 	}
 
+	/* ПОЛУЧЕНИЕ РЕЗУЛЬТАТАНОГО МАССИВА */
+	function GetArrResult(arrResult) {
+		var arr = []; //создание массива
+		var GroupData = underscore.groupBy(arrResult, 'Date'); //группировка элементов по дате
+		for (var key in GroupData) {
+			//обход всех свойств объекта
+			var List = GroupData[key]; //получение группированного списка с результатами
+			var NameScales = ''; //объявление переменной для имени весов
+			var SumMass = 0; //сумма массы
+			underscore.each(List, (row, ind) => {
+				//объод массива с данными
+				SumMass += row.Mass; //получение суммы массы
+				NameScales = row.NameScales; //Имя весов
+			});
+			var Obj = {}; //создание объекта
+			Obj.Date = key; //добавление даты в объект
+			Obj.SummMass = SumMass; //добавление суммы массы
+			Obj.NameScales = NameScales; //добавление имени весов
+			arr.push(Obj); //добавление объекта в массив
+		}
+		callback(arr); //возврат результата в callback
+	}
+
+	/* ПОЛУЧЕНИЕ РАЗНИЦЫ БРУТТО-НЕТТО */
 	function GetMass(Brutto, Netto) {
-		var result = 0;
+		var result = 0; //объявление переменной с результатом
 		if (Brutto == 0) {
-			result = 0;
+			//проверка БРУТТО на 0
+			result = 0; //присовение 0 результату
 		} else {
-			result = Brutto - Netto;
+			result = Brutto - Netto; //получение разницы
 			if (result < 0) {
-				result = 0;
+				//проверка результата
+				result = 0; //присвоение 0 результату
 			}
 		}
-		return result;
+		return result; //возврат результата
 	}
 
 	/* ОБХОД ТИПОВ ВЕСОВ */
