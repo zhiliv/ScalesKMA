@@ -60,8 +60,10 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 				//получение массива уникальных дней
 				FillArrDate(ResArrDate, params.NameScales).then(DataScales => {
 					//объод массива с уникальными днями
-					CheckSostavOfTime(DataScales);
-					callback(DataScales);
+					CheckSostavOfTime(DataScales).then(res => {
+						console.log('finish');
+						callback(res);
+					});
 				});
 			});
 		});
@@ -69,6 +71,8 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 
 	/* Проверка соответствия составо и времени */
 	function CheckSostavOfTime(DataScales) {
+		var result = Q.defer();
+		var arrResult = [];
 		var arrBrutto = DataScales.Brutto;
 		var arrNetto = DataScales.Netto;
 		arrBrutto.forEach(async (rowBrutto, indRowBrutto) => {
@@ -103,10 +107,19 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 						}
 					});
 					if (FndIndListRow != -1) {
+						var Obj = {};
+						Obj.Brutto = rowListBrutto;
+						Obj.Netto = ListNetto[FndIndListRow];
+						console.log(Obj);
+						arrResult.push(Obj);
 					}
 				});
 			}
+			if (indRowBrutto == arrBrutto.length - 1) {
+				result.resolve(arrResult);
+			}
 		});
+		return result.promise;
 	}
 
 	/* ОБХОД ТИПОВ ВЕСОВ */
