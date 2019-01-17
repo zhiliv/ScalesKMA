@@ -58,16 +58,56 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 			//получение массива дат(по дням)
 			GetArrDateDay(arrDate, params.DateTimeEnd).then(ResArrDate => {
 				//получение массива уникальных дней
-				FillArrDate(ResArrDate, params.NameScales).then(res => {
+				FillArrDate(ResArrDate, params.NameScales).then(DataScales => {
 					//объод массива с уникальными днями
-					callback(res);
+					CheckSostavOfTime(DataScales);
+					callback(DataScales);
 				});
 			});
 		});
 	});
 
 	/* Проверка соответствия составо и времени */
-	function CheckSostavOfTime() {}
+	function CheckSostavOfTime(DataScales) {
+		var arrBrutto = DataScales.Brutto;
+		var arrNetto = DataScales.Netto;
+		arrBrutto.forEach(async (rowBrutto, indRowBrutto) => {
+			var DateStartBrutto = rowBrutto[0].DateTimeStart;
+			var FndInd = -1;
+			FndInd = arrNetto.findIndex(rowNetto => {
+				var DateStartNetto = rowNetto[0].DateTimeStart;
+				if (DateStartNetto == DateStartBrutto) {
+					return true;
+				}
+			});
+
+			if (FndInd != -1) {
+				//console.log('ind', FndInd);
+				var ListBrutto = rowBrutto[0].List;
+				var ListNetto = arrNetto[FndInd][0].List;
+				ListBrutto.forEach((rowListBrutto, indLitBrutto) => {
+					var DateTimeOpBruttoCompare = rowListBrutto.DateTimeOp;
+					var CountVagonsBrutto = rowListBrutto.CountVagons;
+					var FndIndListRow = -1;
+					FndIndListRow = ListNetto.findIndex(rowListNetto => {
+						var DateTimeOpNettoCompare = rowListNetto.DateTimeOp;
+						var CountVagonsNetto = rowListNetto.CountVagons;
+						//console.log('​CheckSostavOfTime -> rowListNetto', rowListNetto);
+						for (var tmr = 2; tmr <= 12; tmr++) {
+							var DateOpNettoAdd = moment(DateTimeOpNettoCompare)
+								.add(tmr, 'minutes')
+								.format('YYYY-MM-DD HH:mm');
+							if (DateTimeOpBruttoCompare == DateOpNettoAdd && CountVagonsBrutto == CountVagonsNetto) {
+								return true;
+							}
+						}
+					});
+					if (FndIndListRow != -1) {
+					}
+				});
+			}
+		});
+	}
 
 	/* ОБХОД ТИПОВ ВЕСОВ */
 	async function FillArr(params) {
@@ -77,6 +117,7 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 			'SELECT date_format(DateTimeOp, "%Y-%m-%d %H:%i") as DateTimeOp, MAX(NumVagons) as CountVagons,  SUM(Mass) as Mass FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateTimeOp'; //формирование запроса
 		var value = [params.DateTimeStart, params.DateTimeEnd, params.NameScales, 'brutto'];
 		sql = await DB.format(sql, value); //формирование sql запроса со значениями для параметров
+		console.log('​FillArr -> sql', sql);
 		var Obj = {}; //создание нового объекта
 		Obj.NameScales = params.NameScales; //доабвление в объект имени весов
 		Obj.typeScaels = 'brutto'; //добалвние в объект типа весов
