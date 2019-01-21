@@ -10,12 +10,235 @@ $(window).on('load', () => {
 		$('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 64); //установка высоты для блока ListScalesDataMass
 	});
 	$('.loader').hide(); //скрыть элемент
-	OnLoadIndex(); //после заггрузки главной страницы
-	FillDateTimemainGraphics(); //заполнение дат
+	ItemMainNav_Graphics();
 });
 
-/* НАЖАТИЕ НА КНОПКУ "ГРАФИК" */
-$('#ItemMainNav_Graphics').on('click', LoadFormGraphics()); //при нажитии на кнопку "Применить" - загрузить форму с графиком
+/* ПРИ НАЖАТИ НА КНОПКУ "ГРАФИКИ" В ГЛАВНОМ МЕНЮ */
+function ItemMainNav_Graphics() {
+	$('#ItemMainNav_Graphics')
+		.parent('li')
+		.addClass('active'); //добавление класса элементу
+	$(window).on('resize', () => {});
+	$('#MainData').load('public/Forms/mainChart.html', () => {
+		//загрузка файла html
+		$('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 64); //установка высоты для блока ListScalesDataMass
+		FillDateTimemainGraphics(); //заполнение дат в input
+		$('#MainGraphicsApply').on('click', () => {
+			//при нажатии на кнопку "Применить" на вкладке "Графики" для главного графика
+			FillScales().then(NameScales => {
+				//обход ивсех весов по именам
+				GetDataOfSacels(NameScales).then(Data => {
+					//полчение данных по весам
+					console.log(Data);
+					OrganizationData(Data);
+				});
+			});
+		});
+	});
+}
+
+/* ФОРМИРОВАНИЕ МАССИВОВ С ДАННЫМИ ДЛЯ ВЫВОДА В ДИАГРАММУ */
+function OrganizationData(Data) {
+	OrganizationDate(Data).then(labelDate => {
+		OrganizationArrValues(labelDate, Data).then(res => {
+			//console.log('​OrganizationData -> res', res);
+		});
+	});
+
+	/* ПОЛУЧЕНИЕ МАССИВА УНИКАЛЬНЫХ ДАТ ПО ВСЕМ ВЕСАМ */
+	function OrganizationDate(ListData) {
+		var result = Q.defer(); //создание promise
+		var arrDate = []; //создание массива с датами
+		ListData.forEach((rowList, indList) => {
+			//обход массива с данными
+			rowList.forEach((row, ind) => {
+				//получение строки данных за день
+				var DateRow = row.Date; //дата в строке массва
+				var t = _.contains(arrDate, DateRow); //поиск даты массиве с датами
+				if (t === false) {
+					//проверка на существование
+					arrDate.push(DateRow); //добавление даты в массив дат
+				}
+			});
+			if (indList == ListData.length - 1) {
+				//проверка на последнюю запись при обходе
+				result.resolve(arrDate); //добавление результата в promise
+			}
+		});
+		return result.promise; //возврат результата в promise
+	}
+
+	function OrganizationArrValues(ListDate, arrData) {
+		var result = Q.defer();
+		var TempArrData = [];
+		var arrNameScales = [];
+		var TmpArrResult = [];
+
+		arrData.forEach((ListData, indData) => {
+			ListData.forEach((rowlistData, indListData) => {
+				TempArrData.push(rowlistData);
+			});
+		});
+
+		arrData.forEach((rowArrData, indarrData) => {
+			arrNameScales.push(rowArrData[0].NameScales);
+		});
+
+		ListDate.forEach((rowListDate, indListDate) => {
+			var TMP = _.where(TempArrData, { Date: rowListDate });
+			if (TMP.length != arrNameScales.length) {
+				arrNameScales.forEach((rowNameScales, indNameScales) => {
+					var CheckScales = _.where(TempArrData, { NameScales: rowNameScales, Date: rowListDate });
+					console.log('​OrganizationArrValues -> CheckScales', CheckScales);
+					if (CheckScales.length == 0) {
+						var Obj = {};
+						Obj.NameScales = rowNameScales;
+						Obj.Data = rowListDate;
+						Obj.SummMass = 0;
+						TmpArrResult.push(Obj);
+					} else {
+						var Obj = {};
+						Obj.NameScales = CheckScales[0].NameScales;
+						Obj.Data = CheckScales[0].Date;
+						Obj.SummMass = CheckScales[0].SummMass;
+						TmpArrResult.push(Obj);
+					}
+				});
+			} else {
+				console.log('​OrganizationArrValues -> TMP', TMP);
+				TMP.forEach((row, ind) => {
+					console.log('​OrganizationArrValues -> row', row);
+					var Obj = {};
+					Obj.NameScales = row.NameScales;
+					Obj.Data = row.Date;
+					Obj.SummMass = row.SummMass;
+					TmpArrResult.push(Obj);
+				});
+			}
+		});
+		console.log(TmpArrResult);
+
+		/* 		var reuslt = Q.defer();
+		var resultArr = [];
+		arrData.forEach((row, ind) => {
+			var Obj = {};
+			var value = [];
+			var text = '';
+			var CheckDate = -1;
+			ListDate.forEach((rowListDate, indListdate) => {
+				console.log('​OrganizationArrValues -> ListDate', ListDate);
+				arrData.forEach((ListDataScale, indArrData) => {
+					CheckDate = ListDataScale.findIndex(row => {
+						if (row.Date == rowListDate) {
+							return true;
+						}
+					});
+					if (CheckDate != -1) {
+						value.push(ListDataScale[CheckDate].SummMass);
+						if (text == '') {
+							text = ListDataScale[CheckDate].NameScales;
+						}
+					} else {
+						value.push(0);
+					}
+				});
+			});
+
+			Obj.values = value;
+			Obj.text = text;
+			resultArr.push(Obj);
+			if (row == arrData.length - 1) {
+				reuslt.resolve(resultArr);
+			}
+		});
+		return reuslt.promise; */
+	}
+}
+
+/* ПРИЕМ ДАННЫХ ПО ВЕСАМ */
+function GetDataOfSacels(NameScales) {
+	var result = Q.defer(); //создание promise
+	var arr = []; //создание массива
+	NameScales.forEach(async (Scales, ind) => {
+		//обход всех имен весов
+		await GetSostavGroupOfVagonsForDay(Scales).then(Data => {
+			//получение данных с массами по весам
+			arr.push(Data); //добавление данных в массив
+		});
+		if (ind == NameScales.length - 1) {
+			//проверка на последний элемент массива
+			result.resolve(arr); //добавление результата в promise
+		}
+	});
+	return result.promise; //возврат результата в promise
+}
+
+/* ПОЛУЧЕНИЕ МАССЫ ДОБЫЧИ */
+function GetSostavGroupOfVagonsForDay(NameScales) {
+	var result = Q.defer(); //создание promise
+	var params = {}; //создание объекта для хранения параметров
+	var DateTimeStart = new Date($('#datetimeStart').val()); //добавлегние в переменную значения жаты начала
+	params.DateTimeStart = moment(new Date(DateTimeStart)).format('YYYY-MM-DD HH:mm'); //дата начала
+	var DateTimeEnd = new Date(Date($('#datetimeEnd').val())); //добавление переменной со значением даты
+	params.DateTimeEnd = moment(DateTimeEnd).format('YYYY-MM-DD HH:mm'); //дата окончания
+	params.NameScales = NameScales; //имя весов
+	socket.emit('GetSostavGroupOfVagonsForDay', params, res => {
+		//отправить запрос через socket
+		result.resolve(res); //добавление результата в promise
+	});
+	return result.promise; //возврат результа в promise
+}
+
+/* ОБХОД ВСЕХ ВЕСОВ */
+function FillScales() {
+	var arr = []; //создание массива
+	var result = Q.defer(); //создание promise
+	socket.emit('GetNameScales', list => {
+		//получение имен весов
+		list.forEach(async (Scales, ind) => {
+			//перебор полученных значений
+			var NameScales = Scales['name']; //имя весов
+			await arr.push(NameScales); //добавление имени весов в массив
+			if (ind == list.length - 1) {
+				//проверка на последний элемент в массиве
+				result.resolve(arr); //добавление рзультата в promise
+			}
+		});
+	});
+	return result.promise; //возврат результата в promise
+}
+
+/* ОПРЕДЕЛЕНИЕ ВЫСОТЫ #LISTSCALESDATAMASS */
+function GetHeightListScalesDataMass() {
+	var result = 0; //результат
+	var HeightNavigate = 0; //высота навигации
+	var HeightFooter = 0; //высота футера
+	var HeightBody = 0; //получение высоты окна
+
+	/* ПОЛУЧЕНИЕ ВЫСОТА МЕНЮ НАВИГАЦИИ */
+	function GetHeightNavigate() {
+		var height = $('#MainNavigateMenu').height(); //получение высоты элемента
+		return height; //возврат результата
+	}
+	HeightNavigate = GetHeightNavigate(); //высота блока навигации
+
+	/* ПОЛУЧЕНИЕ ВЫСОТЫ FOOTER */
+	function GetHeightFooter() {
+		var height = $('.page-footer').height(); //получение высоты футера
+		return height; //возрат результата
+	}
+	HeightFooter = GetHeightFooter(); //высота блока footer
+
+	/* ПОЛУЧЕНИЕ ВЫСОТЫ BODY */
+	function GetHeightBody() {
+		var height = $('body').height(); //получение высоты body
+		return height; //возврат результата
+	}
+
+	HeightBody = GetHeightBody(); //высота страницы
+	result = HeightBody - (HeightNavigate + HeightFooter); //получение высоты без учета блоков
+	return result; //возврат результата
+}
 
 /* ЗАПОЛНЕНИЕ ДАТ НАЧАЛА И ТЕКУЩИЮ ДАТУ В ГАВНОМ КГРАФИКЕ */
 function FillDateTimemainGraphics() {
@@ -64,107 +287,4 @@ function FillDateTimemainGraphics() {
 	}
 
 	SetDatePimePicker(); //установка datetimepicker для полей input
-}
-
-/* ОПРЕДЕЛЕНИЕ ВЫСОТЫ #LISTSCALESDATAMASS */
-function GetHeightListScalesDataMass() {
-	var result = 0; //результат
-	var HeightNavigate = 0; //высота навигации
-	var HeightFooter = 0; //высота футера
-	var HeightBody = 0; //получение высоты окна
-
-	/* ПОЛУЧЕНИЕ ВЫСОТА МЕНЮ НАВИГАЦИИ */
-	function GetHeightNavigate() {
-		var height = $('#MainNavigateMenu').height(); //получение высоты элемента
-		return height; //возврат результата
-	}
-	HeightNavigate = GetHeightNavigate(); //высота блока навигации
-
-	/* ПОЛУЧЕНИЕ ВЫСОТЫ FOOTER */
-	function GetHeightFooter() {
-		var height = $('.page-footer').height(); //получение высоты футера
-		return height; //возрат результата
-	}
-	HeightFooter = GetHeightFooter(); //высота блока footer
-
-	/* ПОЛУЧЕНИЕ ВЫСОТЫ BODY */
-	function GetHeightBody() {
-		var height = $('body').height(); //получение высоты body
-		return height; //возврат результата
-	}
-	HeightBody = GetHeightBody(); //высота страницы
-
-	result = HeightBody - (HeightNavigate + HeightFooter); //получение высоты без учета блоков
-
-	return result; //возврат результата
-}
-
-/* ПОСЛЕ ЗАГРУЗКИ ГЛАВНОЙ СТРАНИЦЫ */
-function OnLoadIndex() {
-	$('#ItemMainNav_Graphics')
-		.parent('li')
-		.addClass('active'); //добавление класса элементу
-	$('#ItemMainNav_Graphics').click(); //нажатие кнопки
-	$(window).on('resize', () => {
-		//при изменнеии размеров формы
-		$('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 64); //установка высоты для блока ListScalesDataMass
-	});
-	FillCardsScales(); //заполнение карточек весов
-}
-
-/* ЗАГРУЗКА ФОРМЫ ГРАФИКИ */
-function LoadFormGraphics() {
-	$('#MainData').load('public/Forms/mainChart.html', () => {
-		//загрузка файла html
-		$('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 64); //установка высоты для блока ListScalesDataMass
-	});
-}
-
-/* ЗАПОЛНЕНИЕ КАРТОЧЕК ВЕСОВ */
-function FillCardsScales() {
-	$('#ListScalesDataMass .scrollbar-primary').empty(); //очистка блока
-	socket.emit('GetNameScales', list => {
-		//получение имен весов
-		list.forEach((Scales, ind) => {
-			//перебор полученных значений
-			var NameScales = Scales['name']; //имя весов
-			GetSostavGroupOfVagonsForDay(NameScales);
-			Card(NameScales, ind); //формирование карточки весов
-		});
-	});
-
-	/* ГАНЕРАЦИЯ КАРТОЧКИ */
-	function Card(NameScales, ind) {
-		$('<div>', {
-			class: 'col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12',
-			style: 'padding-top: 3%;',
-		}).appendTo('#ListScalesDataMass .scrollbar-primary'); //создание блока
-
-		$('<div>', {
-			class: 'card',
-		}).appendTo($('#ListScalesDataMass .scrollbar-primary .col-xs-12')[ind]); //создание блока
-
-		$('<div>', {
-			class: 'card-body',
-		}).appendTo($('.scrollbar-primary  .card')[ind]); //создание блока
-
-		$('<h4>', {
-			class: 'card-title',
-			text: NameScales,
-		}).appendTo($('.scrollbar-primary  .card-body')[ind]); //создание заголовка с именем весов
-	}
-
-	/* ПОЛУЧЕНИЕ МАССЫ ДОБЫЧИ */
-	function GetSostavGroupOfVagonsForDay(NameScales) {
-		var params = {}; //создание объекта для хранения параметров
-		var DateTimeStart = new Date($('#datetimeStart').val()); //добавлегние в переменную значения жаты начала
-		params.DateTimeStart = moment(new Date(DateTimeStart)).format('YYYY-MM-DD HH:mm'); //дата начала
-		var DateTimeEnd = new Date(Date($('#datetimeEnd').val())); //добавление переменной со значением даты
-		params.DateTimeEnd = moment(DateTimeEnd).format('YYYY-MM-DD HH:mm'); //дата окончания
-		params.NameScales = NameScales; //имя весов
-		socket.emit('GetSostavGroupOfVagonsForDay', params, result => {
-			//отправить запрос через socket
-			console.log(result);
-		});
-	}
 }

@@ -5,7 +5,6 @@ var mysql = require('mysql'), //подключение библиотеки дл
 	clc = require('cli-color'), //подключение библиотеки для выдления цветом в терминале
 	Q = require('q'), //подклчение бибилиотеки для работы с promise
 	moment = require('moment'), //подключение momentjs
-	_ = require('lodash'), //библиотека для работы с массивами
 	underscore = require('underscore'), //библиотека для работы с массивами
 	async = require('async'); //библиотека для асинхронной работы
 moment.locale('ru'); //указание локации у moment js
@@ -154,7 +153,6 @@ exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
 			'SELECT date_format(DateTimeOp, "%Y-%m-%d %H:%i") as DateTimeOp, MAX(NumVagons) as CountVagons,  SUM(Mass) as Mass FROM DataScales WHERE (DateTimeOp BETWEEN ? AND ?) AND CountWagons>4 AND Scales=? AND typeScales=? GROUP BY DateTimeOp'; //формирование запроса
 		var value = [params.DateTimeStart, params.DateTimeEnd, params.NameScales, 'brutto'];
 		sql = await DB.format(sql, value); //формирование sql запроса со значениями для параметров
-		console.log('​FillArr -> sql', sql);
 		var Obj = {}; //создание нового объекта
 		Obj.NameScales = params.NameScales; //доабвление в объект имени весов
 		Obj.typeScaels = 'brutto'; //добалвние в объект типа весов

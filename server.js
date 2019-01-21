@@ -30,7 +30,7 @@ app.get('/', function(req, res) {
 });
 
 /* ЗАПУСК СЕРВЕРА */
-exports.StartServer = function() {
+exports.StartServer = () => {
 	server.listen(servers.Port, servers.Adress, () => {
 		//запускаем сервер с адресом и портом
 		//указываем параметры сервера
