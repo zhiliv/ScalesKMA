@@ -51,7 +51,7 @@ exports.GetNameScales = callback => {
 
 //TODO
 /* ПОЛУЧЕНИЕ  ГРУППИРОВАННЫХ ВАГОНОВ У СОСТАВОВ ПО ДНЯМ НА ВЕСАХ */
-exports.GetSostavGroupOfVagonsForDay = async (params, callback) => {
+exports.GetSostavGroupOfVagonsForDay = (params, callback) => {
 	FillArr(params).then(ArrInitial => {
 		//Обход массива типов весов
 		GetArrDate(ArrInitial).then(arrDate => {

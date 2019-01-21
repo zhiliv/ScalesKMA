@@ -17,6 +17,7 @@ const servers = {
 	Parse = require('./Parse'), //подключение библиотеки для парсинга xml
 	moment = require('moment'), //бибилотека для работы со временем
 	clear = require('console-clear'), //раскраска терминала
+	FN = require('./BackFunc'), //подключение функци
 	$ = require('jquery'), //подключаем jquery
 	async = require('async'); //библиотека для асинхронной работы
 require('events').EventEmitter.prototype._maxListeners = 10000; //TODO изменить на 300;
@@ -71,15 +72,17 @@ function StartParse() {
 /* ОБРАБОТКА СОКЕТОВ */
 io.on('connection', socket => {
 	/* получение всех имен весов */
-	socket.on('GetNameScales', callback => {
-		DB.GetNameScales(res => {
-			callback(res);
-		});
-	});
+	socket.on('GetNameScales', callback => {});
 
-	socket.on('GetSostavGroupOfVagonsForDay', (params, callback) => {
-		DB.GetSostavGroupOfVagonsForDay(params, result => {
-			callback(result);
+	socket.on('MainGraphicsApply', (params, callback) => {
+		FN.FillScales().then(NameScales => {
+			//обход ивсех весов по именам
+			FN.GetDataOfSacels(params, NameScales).then(Data => {
+				//полчение данных по весам
+				FN.OrganizationData(Data, res => {
+					callback(res);
+				});
+			});
 		});
 	});
 });
