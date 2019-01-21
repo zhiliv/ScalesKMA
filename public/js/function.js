@@ -41,7 +41,7 @@ function ItemMainNav_Graphics() {
 function OrganizationData(Data) {
 	OrganizationDate(Data).then(labelDate => {
 		OrganizationArrValues(labelDate, Data).then(res => {
-			//console.log('​OrganizationData -> res', res);
+			console.log('​OrganizationData -> res', res);
 		});
 	});
 
@@ -115,43 +115,11 @@ function OrganizationData(Data) {
 					TmpArrResult.push(Obj);
 				});
 			}
-		});
-		console.log(TmpArrResult);
-
-		/* 		var reuslt = Q.defer();
-		var resultArr = [];
-		arrData.forEach((row, ind) => {
-			var Obj = {};
-			var value = [];
-			var text = '';
-			var CheckDate = -1;
-			ListDate.forEach((rowListDate, indListdate) => {
-				console.log('​OrganizationArrValues -> ListDate', ListDate);
-				arrData.forEach((ListDataScale, indArrData) => {
-					CheckDate = ListDataScale.findIndex(row => {
-						if (row.Date == rowListDate) {
-							return true;
-						}
-					});
-					if (CheckDate != -1) {
-						value.push(ListDataScale[CheckDate].SummMass);
-						if (text == '') {
-							text = ListDataScale[CheckDate].NameScales;
-						}
-					} else {
-						value.push(0);
-					}
-				});
-			});
-
-			Obj.values = value;
-			Obj.text = text;
-			resultArr.push(Obj);
-			if (row == arrData.length - 1) {
-				reuslt.resolve(resultArr);
+			if (indListDate == rowListDate.length) {
+				result.resolve(TmpArrResult);
 			}
 		});
-		return reuslt.promise; */
+		return result.promise;
 	}
 }
 
