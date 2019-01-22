@@ -109,7 +109,6 @@ exports.OrganizationData = (Data, callback) => {
 			//обход массива с данными
 			arrNameScales.push(rowArrData[0].NameScales); //формированеи массива со спискем имен весов
 		});
-
 		ListDate.forEach((rowListDate, indListDate) => {
 			//обход массива с датами
 			var TMP = _.where(TempArrData, { Date: rowListDate }); //нахождение (проверка на сущестоввание) элемента массиа
@@ -143,7 +142,8 @@ exports.OrganizationData = (Data, callback) => {
 					TmpArrResult.push(Obj); //добавление объекта в массив
 				});
 			}
-			if (indListDate == rowListDate.length) {
+
+			if (indListDate == ListDate.length - 1) {
 				//если посдений элемент массива
 				result.resolve(TmpArrResult); //добавление результата в promise
 			}

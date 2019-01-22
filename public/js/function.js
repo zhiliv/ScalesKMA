@@ -24,34 +24,36 @@ function ItemMainNav_Graphics() {
 		$('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 64); //установка высоты для блока ListScalesDataMass
 		FillDateTimemainGraphics(); //заполнение дат в input
 		$('#MainGraphicsApply').on('click', () => {
-			var params = {}; //создание объекта для хранения параметров
-			var DateTimeStart = new Date($('#datetimeStart').val()); //добавлегние в переменную значения жаты начала
-			params.DateTimeStart = moment(new Date(DateTimeStart)).format('YYYY-MM-DD HH:mm'); //дата начала
-			var DateTimeEnd = new Date(Date($('#datetimeEnd').val())); //добавление переменной со значением даты
-			params.DateTimeEnd = moment(DateTimeEnd).format('YYYY-MM-DD HH:mm'); //дата окончания
-			socket.emit('MainGraphicsApply', params, resultData => {
-				console.log('​functionItemMainNav_Graphics -> resultData', resultData.Data[0]);
-				var chartData = {
-					legend: {
-						layout: 'x2',
-						align: 'right',
-					},
-					type: 'line', // Specify your chart type here.
-					series: resultData.Data,
-					scaleX: {
-						labels: resultData.labelDate,
-					},
-				};
-				zingchart.render({
-					id: 'MainGraphics',
-					data: chartData,
-					height: '99%',
-					width: '100%',
-				});
-			});
-			//при нажатии на кнопку "Применить" на вкладке "Графики" для главного графика
+			BuildMainGrafics();
+		});
+		BuildMainGrafics();
+	});
+}
+
+function BuildMainGrafics() {
+	var params = {}; //создание объекта для хранения параметров
+	params.DateTimeStart = moment($('#datetimeStart').val(), 'DD.MM.YYYY HH:mm').format('YYYY-MM-DD HH:mm'); //дата начала
+	params.DateTimeEnd = moment($('#datetimeEnd').val(), 'DD.MM.YYYY HH:mm').format('YYYY-MM-DD HH:mm'); //дата окончания
+	socket.emit('MainGraphicsApply', params, resultData => {
+		var chartData = {
+			legend: {
+				layout: 'x2',
+				align: 'right',
+			},
+			type: 'line', // Specify your chart type here.
+			series: resultData.Data,
+			scaleX: {
+				labels: resultData.labelDate,
+			},
+		};
+		zingchart.render({
+			id: 'MainGraphics',
+			data: chartData,
+			height: '99%',
+			width: '100%',
 		});
 	});
+	//при нажатии на кнопку "Применить" на вкладке "Графики" для главного графика
 }
 
 /* ОПРЕДЕЛЕНИЕ ВЫСОТЫ #LISTSCALESDATAMASS */
@@ -91,8 +93,7 @@ function FillDateTimemainGraphics() {
 	/* получение даты начала месяца */
 	function GetStartDate() {
 		var date = moment()
-			.add(-1, 'M')
-			.startOf('month')
+			.add(-7, 'd')
 			.format('DD.MM.YYYY HH:mm'); //установка формата времени moment
 		return date; //возврат значения
 	}
@@ -124,14 +125,11 @@ function FillDateTimemainGraphics() {
 	function SetDatePimePicker() {
 		$('#datetimeStart').datetimepicker({
 			timepicker: true,
-
-			onChangeDateTime: function(dp, $input) {
-				$('#datetimeStart').val(moment(new Date($('#datetimeStart').val())).format('DD.MM.YYYY HH:mm')); //дата начала
-			},
+			format: 'd.m.Y H:i',
 		}); //указываем что это datepicker
 		$('#datetimeEnd').datetimepicker({
 			timepicker: true,
-			format: 'Y.m.d H:i',
+			format: 'd.m.Y H:i',
 		}); //указываем что это datepicker
 	}
 
