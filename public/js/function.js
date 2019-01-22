@@ -29,10 +29,26 @@ function ItemMainNav_Graphics() {
 			params.DateTimeStart = moment(new Date(DateTimeStart)).format('YYYY-MM-DD HH:mm'); //дата начала
 			var DateTimeEnd = new Date(Date($('#datetimeEnd').val())); //добавление переменной со значением даты
 			params.DateTimeEnd = moment(DateTimeEnd).format('YYYY-MM-DD HH:mm'); //дата окончания
-			socket.emit('MainGraphicsApply', params, res => {
-				console.log(res);
+			socket.emit('MainGraphicsApply', params, resultData => {
+				console.log('​functionItemMainNav_Graphics -> resultData', resultData.Data[0]);
+				var chartData = {
+					legend: {
+						layout: 'x2',
+						align: 'right',
+					},
+					type: 'line', // Specify your chart type here.
+					series: resultData.Data,
+					scaleX: {
+						labels: resultData.labelDate,
+					},
+				};
+				zingchart.render({
+					id: 'MainGraphics',
+					data: chartData,
+					height: '99%',
+					width: '100%',
+				});
 			});
-
 			//при нажатии на кнопку "Применить" на вкладке "Графики" для главного графика
 		});
 	});
@@ -108,7 +124,10 @@ function FillDateTimemainGraphics() {
 	function SetDatePimePicker() {
 		$('#datetimeStart').datetimepicker({
 			timepicker: true,
-			format: 'Y.m.d H:i',
+
+			onChangeDateTime: function(dp, $input) {
+				$('#datetimeStart').val(moment(new Date($('#datetimeStart').val())).format('DD.MM.YYYY HH:mm')); //дата начала
+			},
 		}); //указываем что это datepicker
 		$('#datetimeEnd').datetimepicker({
 			timepicker: true,
