@@ -1,33 +1,36 @@
 /* отключение надписи в диаграмме */
+
 div[id$="license-text"] {
-  display: none !important;
+    display: none !important;
 }
 
+
 /* ktdsq ,kjr uhfabrf */
+
 .LeftGraphicsMainRightBlock {
-  border-right: 4px solid #007bff;
+    border-right: 4px solid #007bff;
 }
 
 body,
 html {
-/*   overflow-y: hidden;  */
-  height: 100%;
+    /*   overflow-y: hidden;  */
+    height: 100%;
 }
 
 #ListScalesDataMass {
-  overflow-y: scroll;
-  overflow-x: hidden;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 #CharScalesdataMass {
-  padding-top: 1%;
+    padding-top: 1%;
 }
 
-.loader{
-  position: absolute;
-  top :0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  margin: auto;
+.loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
 }

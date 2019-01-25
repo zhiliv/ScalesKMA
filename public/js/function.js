@@ -9,7 +9,6 @@ $(window).on('load', () => {
 	$('#Data').show('', () => {
 		$('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 64); //установка высоты для блока ListScalesDataMass
 	});
-	$('.loader').hide(); //скрыть элемент
 	ItemMainNav_Graphics();
 });
 
@@ -24,17 +23,19 @@ function ItemMainNav_Graphics() {
 		$('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 64); //установка высоты для блока ListScalesDataMass
 		FillDateTimemainGraphics(); //заполнение дат в input
 		$('#MainGraphicsApply').on('click', () => {
-			BuildMainGrafics();
+			BuildMainGrafics().then(() => {
+				$('.loader').hide(); //скрыть элемент
+			});
 		});
 		BuildMainGrafics();
 	});
 }
 
-function BuildMainGrafics() {
+async function BuildMainGrafics() {
 	var params = {}; //создание объекта для хранения параметров
 	params.DateTimeStart = moment($('#datetimeStart').val(), 'DD.MM.YYYY HH:mm').format('YYYY-MM-DD HH:mm'); //дата начала
 	params.DateTimeEnd = moment($('#datetimeEnd').val(), 'DD.MM.YYYY HH:mm').format('YYYY-MM-DD HH:mm'); //дата окончания
-	socket.emit('MainGraphicsApply', params, resultData => {
+	await socket.emit('MainGraphicsApply', params, resultData => {
 		var chartData = {
 			legend: {
 				layout: 'x2',
