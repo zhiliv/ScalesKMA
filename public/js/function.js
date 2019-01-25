@@ -51,7 +51,7 @@ async function BuildMainGrafics() {
 			id: 'MainGraphics',
 			data: chartData,
 			height: '99%',
-			width: '100%',
+			width: '99%',
 		});
 	});
 	//при нажатии на кнопку "Применить" на вкладке "Графики" для главного графика

@@ -74,8 +74,11 @@ io.on('connection', socket => {
 	/* получение всех имен весов */
 	socket.on('GetNameScales', callback => {});
 
-	socket.on('MainGraphicsApply', (params, callback) => {
-		FN.FillScales().then(NameScales => {
+  socket.on('MainGraphicsApply', (params, callback) => {
+    FN.GetMainGraphics(params, res => {
+      callback(res)
+    })
+/* 		FN.FillScales().then(NameScales => {
 			//обход ивсех весов по именам
 			FN.GetDataOfSacels(params, NameScales).then(Data => {
 				//полчение данных по весам
@@ -83,6 +86,6 @@ io.on('connection', socket => {
 					callback(res);
 				});
 			});
-		});
+		}); */
 	});
 });
