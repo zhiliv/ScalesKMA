@@ -18,15 +18,19 @@ var DB = mysql.createConnection({
 });
 
 module.exports.DB = DB; //делаем модуль экспортным
-DB.connect(); //устанавливаем соединение с БД
+try{
+  DB.connect(); //устанавливаем соединение с БД
+}
+catch(err){
+console.log('Переподключение к БД');
+}
 handleDisconnect(DB); //поддержка постоянного соединения с БД
 
 /* ПОДДЕРЖКА ПОСТОЯННОГО СОЕДИНЕНИЯ С БД */
 function handleDisconnect(client) {
 	client.on('error', error => {
-		console.log(error);
 		if (!error.fatal) return;
-		if (error.code !== 'PROTOCOL_CONNECTION_LOST') throw err;
+		//if (error.code !== 'PROTOCOL_CONNECTION_LOST') throw err;
 		DB = mysql.createConnection(client.config);
 		handleDisconnect(DB);
 		DB.connect();
@@ -36,7 +40,8 @@ function handleDisconnect(client) {
 /* ОБРАБОТКА ОШИБОК ЗАПРОСОВ */
 function DefineError(err, FuncName) {
 	if (err)
-		throw console.log(clc.red(moment().format('LLL') + ' Произошла ошибка:' + err + '\n' + 'в функции: ' + FuncName)); //вывод сообщения
+     console.log(clc.red(moment().format('LLL') + ' Произошла ошибка:' + err + '\n' + 'в функции: ' + FuncName)); //вывод сообщения
+     handleDisconnect(DB)
 }
 
 /* ПОЛУЧЕНИЕ ИМЕН ВЕСОВ */

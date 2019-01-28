@@ -4,9 +4,6 @@ div[id$="license-text"] {
     display: none !important;
 }
 
-
-/* ktdsq ,kjr uhfabrf */
-
 .LeftGraphicsMainRightBlock {
     border-right: 4px solid #007bff;
 }
@@ -24,13 +21,4 @@ html {
 
 #CharScalesdataMass {
     padding-top: 1%;
-}
-
-.loader {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: auto;
 }

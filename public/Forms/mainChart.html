@@ -1,67 +1,105 @@
 <!-- Левый блок -->
-<div class="col-xs-12 col-sm-12 col-md-12 col-lg-3 col-xl-3 " id="ListScalesDataMass">
-    <div class="row scrollbar-primary">
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-3 col-xl-3 "
+  id="ListScalesDataMass">
+  <div class="row scrollbar-primary">
 
-        <!-- карточка -->
-        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12" style="padding-top: 3%;">
-            <!-- Card -->
-            <div class="card">
-                <!-- Card image -->
-                <div class="view overlay">
-                    <img class="card-img-top" src="https://mdbootstrap.com/img/Mockups/Lightbox/Thumbnail/img%20(67).jpg" alt="Card image cap">
-                    <a href="#!">
-                        <div class="mask rgba-white-slight"></div>
-                    </a>
-                </div>
-                <!-- Card content -->
-                <div class="card-body">
-                    <!-- Title -->
-                    <h4 class="card-title">Card title</h4>
-                    <!-- Text -->
-                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.
-                    </p>
-                    <!-- Button -->
-                    <a href="#" class="btn btn-primary">Button</a>
-                </div>
-            </div>
-            <!-- Card -->
+
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12"
+      style="padding-top: 3%;">
+
+      <h2 class="text-center">Текущие данные</h2>
+      <div class="Card">
+        <div class="card-body iew view-cascade gradient-card-header unique-color">
+          <h4 class="text-center"><strong>Общая масса:</strong></h4>
+          <h4 class="text-center total-weight"></h4>
         </div>
-        <!--  -->
-
+      </div>
+      <!--
+      <div class="card">
+        <div class="view overlay">
+          <img class="card-img-top"
+            src="https://mdbootstrap.com/img/Mockups/Lightbox/Thumbnail/img%20(67).jpg"
+            alt="Card image cap">
+          <a href="#!">
+            <div class="mask rgba-white-slight"></div>
+          </a>
+        </div>
+        <div class="card-body">
+          <h4 class="card-title">Card title</h4>
+          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's
+            content.
+          </p>
+          <a href="#"
+            class="btn btn-primary">Button</a>
+        </div>
+      </div>
+    </div> -->
     </div>
+  </div>
 </div>
 
 <!-- Правый блок -->
-<div class="col-xs-12 col-sm-12 col-md-12 col-lg-9 col-xl-9" id="CharScalesdataMass">
-    <div class="row w-100">
-        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 w-100 " id='MainGraphic'>
-            <div class="row w-100">
-                <div class="col-xs-12 col-sm-12 col-md-10 col-lg-10 col-xl-10 w-100">
-                    <h4>Общая диаграмма</h4>
-                    <div id="MainGraphics"> </div>
-                </div>
-                <div class="col-xs-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
-                    <div class="row ">
-                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-                            <div class="md-form form">
-                                <input type="text" id="datetimeStart" class="form-control">
-                                <label for="datetimeStart">Начало перода</label>
-                            </div>
-                        </div>
-                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-                            <div class="md-form form">
-                                <input type="text" id="datetimeEnd" class="form-control">
-                                <label for="datetimeEnd">Конец периода</label>
-                            </div>
-                        </div>
-                        <div class="form-row"></div>
-                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 ">
-                            <button type="button" class="btn btn-primary position-sticky" id="MainGraphicsApply">Применить</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-9 col-xl-9"
+  id="CharScalesdataMass">
+  <div class="row w-100">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 w-100 "
+      id='MainGraphic'>
+      <div class="row w-100">
+        <div class="col-xs-12 col-sm-12 col-md-10 col-lg-10 col-xl-10 w-100">
+          <h4>Общая диаграмма</h4>
+
+          <!--           <div class="d-flex justify-content-center loaderMainDiagram h-100">
+              <div class="spinner-border text-primary align-self-center"
+                style="width: 5rem; height: 5rem; "
+                role="status">
+              </div>
+            </div> -->
+
+
+          <!-- Диаграмма -->
+          <div id="MainGraphics"
+            class="justify-content-center">
+
+
+          </div>
+          <!-- Диаграмма END -->
+          <!-- Loader -->
+
+          <!-- Loader END -->
         </div>
+        <div class="col-xs-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
+          <div class="row ">
+            <!-- Начало периода -->
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+              <div class="md-form form">
+                <input type="text"
+                  id="datetimeStart"
+                  class="form-control">
+                <label for="datetimeStart">Начало перода</label>
+              </div>
+            </div>
+            <!-- Начало периода END -->
+            <!-- Конец периода -->
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+              <div class="md-form form">
+                <input type="text"
+                  id="datetimeEnd"
+                  class="form-control">
+                <label for="datetimeEnd">Конец периода</label>
+              </div>
+            </div>
+            <!-- Конец периода END -->
+            <!-- Кнопка "Применить" -->
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 ">
+              <button type="button"
+                class="btn btn-primary position-sticky"
+                id="MainGraphicsApply">Применить</button>
+            </div>
+            <!-- Кнопка "Применить" END -->
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 </div>
