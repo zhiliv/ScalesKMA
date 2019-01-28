@@ -6,23 +6,35 @@ $.datetimepicker.setLocale('ru'); //установка локации для dat
 
 /* ПРИ ЗАГРУЗКЕ СТРАНИЦЫ */
 $(window).on('load', () => {
+  $('.mainloader').removeClass('h-100'); //удаление класса
+  $('.mainloader .spinner-border').hide(); //скрыть элемент с лоадером
   $('#Data').show('', () => {
-    $('.mainloader').removeClass('h-100');
-    $('.mainloader .spinner-border').hide();
+
     $('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 72); //установка высоты для блока ListScalesDataMass
   });
-  ItemMainNav_Graphics();
-  GetTotalWeight();
+  ItemMainNav_Graphics(); //событие при нажатии на кнопку "применить" у главной диаграммы
+  GetTotalWeight().then(res => { //получение суммы массы за день
+    res = Math.floor(res); //округление знания до целого 
+    $('.total-weight').text(res + 'т.'); //вывод данных суммы массы за день в поле
+  });
 });
 
-/* Получение общей массы за день */
+/* ПОЛУЧЕНИЕ ОБЩЕЙ СУММЫ ЗА ДЕНЬ */
 function GetTotalWeight() {
-  var params = {};
-  params.DateTimeStart = moment().startOf('Day').format('YYYY-MM-DD HH:mm');
-  params.DateTimeEnd = moment().endOf('Day').format('YYYY-MM-DD HH:mm');
+  var result = Q.defer(); //создание promise
+  var params = {}; //создание объекта для хранения параметров
+  var summ = 0; //переменная для хранения суммы
+  params.DateTimeStart = moment().startOf('Day').format('YYYY-MM-DD HH:mm'); //получение начала текущего дня
+  params.DateTimeEnd = moment().endOf('Day').format('YYYY-MM-DD HH:mm'); //получение конца текущего дня
   socket.emit('GetTotalWeight', params, res => {
-
+    async.forEachOfSeries(res.Data, async (row, ind) => {
+      summ += row.values[0]; //итератор суммы
+      if (ind == res.Data.length - 1) { //проверка на последний элемент массива
+        result.resolve(summ); //добавление результата в promise
+      }
+    })
   })
+  return result.promise; //возврат результата в promise
 }
 
 /* ПРИ НАЖАТИ НА КНОПКУ "ГРАФИКИ" В ГЛАВНОМ МЕНЮ */
@@ -53,17 +65,17 @@ function BuildMainGrafics() {
         layout: 'x2',
         align: 'right',
       },
-      type: 'line', // Specify your chart type here.
-      series: resultData.Data,
+      type: 'line', //тип диаграммы
+      series: resultData.Data, //данные
       scaleX: {
-        labels: resultData.labelDate,
+        labels: resultData.labelDate, //даты
       },
     };
-    zingchart.render({
-      id: 'MainGraphics',
-      data: chartData,
-      height: '99%',
-      width: '99%',
+    zingchart.render({ //выгрузка данных в блок для формирования гшрафика
+      id: 'MainGraphics', //id элемента в который выгружаем
+      data: chartData, //формированные данные
+      height: '99%', //высота
+      width: '99%', //ширина
     });
   });
   //при нажатии на кнопку "Применить" на вкладке "Графики" для главного графика

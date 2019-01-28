@@ -81,7 +81,10 @@ io.on('connection', socket => {
     })
   });
 
-  SocketIO.ON('GetTotalWeight', (params, callback) => {
-
+  /* ПОЛУЧЕНИЕ ОБЩЕЙ МАССЫ ЗА ДЕНЬ */
+  socket.on('GetTotalWeight', (params, callback) => {
+    FN.GetMainGraphics(params, res => {
+      callback(res);
+    })
   })
 });
