@@ -27,10 +27,10 @@ exports.GetMainGraphics = async (params, callback) => {
     DataToProcess = res;
   });
   await OrganizationResultData(DataToProcess).then(res => {
-    var result = {};
-    result.labelDate = labelDate;
-    result.Data = res;
-    callback(result)
+    var result = {};  //создание объекта
+    result.labelDate = labelDate; //добавление в объект списка дат
+    result.Data = res;  //добавление  в объект данных
+    callback(result)  //возврат результата в callback
   })
 
   /* ФОРМИРОВАНИЕ ДАННЫХ ДЛЯ ВЫГРУЗКИ В ДИАГРАММУ */
@@ -61,7 +61,6 @@ exports.GetMainGraphics = async (params, callback) => {
     });
     return result.promise; //возврат результата в promise
   }
-
 
   /* Сортировка массива и добалвение 0 к отсутствующим датам */
   async function OrganizationArrValues(ListDate, arrData) {
@@ -190,7 +189,6 @@ exports.GetMainGraphics = async (params, callback) => {
     });
     return result.promise; //возврат результата в promise
   }
-
 
   /* ПОЛУЧЕНИЕ ДАННЫМ ПО ВЕСАМ ЗА ПЕРИОД */
   function FillNameScalesForData(ListScales, params) {
