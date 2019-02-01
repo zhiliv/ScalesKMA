@@ -5,19 +5,84 @@ var socket = io(); //создание сокета
 $.datetimepicker.setLocale('ru'); //установка локации для datitimepicker
 
 /* ПРИ ЗАГРУЗКЕ СТРАНИЦЫ */
-$(window).on('load', () => {
+$(window).on('load', async () => {
   $('.mainloader').removeClass('h-100'); //удаление класса
   $('.mainloader .spinner-border').hide(); //скрыть элемент с лоадером
   $('#Data').show('', () => {
 
     $('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 72); //установка высоты для блока ListScalesDataMass
   });
-  ItemMainNav_Graphics(); //событие при нажатии на кнопку "применить" у главной диаграммы
-  GetTotalWeight().then(res => { //получение суммы массы за день
+  await ItemMainNav_Graphics(); //событие при нажатии на кнопку "применить" у главной диаграммы
+  await GetTotalWeight().then(res => { //получение суммы массы за день
     res = Math.floor(res); //округление знания до целого 
     $('.total-weight').text(res + 'т.'); //вывод данных суммы массы за день в поле
   });
+  var MassScalesOfDay; //масса с  весов за день
+  await GetMassWeightofDay().then(res => {
+
+    MassScalesOfDay = res; //присвоение результата переменной
+  })
+  await GetNameScales().then(res => { //получение имен весов
+    async.forEachOfSeries(res, async (row, ind) => { //обход имен весов
+      var DataScales = _.where(MassScalesOfDay, {
+        text: row.name //имя весов
+      }); //поиск строки с имененм весов
+      var MassOfDay = DataScales[0].values[0]; //получение масы по весам за день
+      Addcard(row.name, MassOfDay); //добавление элментов с весами
+    })
+  })
+  await GetDataScalesofHour();
+  await GetDataScalesHour().then(res => {
+    console.log('TCL: res', res)
+
+  })
 });
+
+/* ДОБАВЛЕНИЕ ЭЛЕМЕНТА В СПИСОК ВЕСОВ */
+function Addcard(Name, MassOfDay) {
+  var card = $('<div>', {
+    class: 'card',
+    style: 'margin-top: 5%;'
+  }).appendTo('#ListScalesDataMass > .force-overflow .List'); //создание и добавление элемента
+  var cardBody = $('<div>', {
+    class: 'card-body'
+  }).appendTo(card);
+  $('<h2>', {
+    class: 'text-center',
+    text: Name
+  }).appendTo(cardBody); //создание и добавление элемента
+  $('<h4>', {
+    text: 'Масса за день: ' + MassOfDay + 'т.',
+    class: 'MassOfday'
+  }).appendTo(cardBody); //создание и добавление элемента
+}
+
+/* ПОЛЧЕНИЕ ИМЕН ВЕСОВ */
+function GetNameScales() {
+  var result = Q.defer(); //создание promise
+  socket.emit('GetNameScales', res => { //отправка события сокет
+    result.resolve(res); //добавление результата в promise
+  })
+  return result.promise; //возврат результата в promise
+}
+
+/* ПОЛУЧЕНИЕ ОБЩЕЙ СУММЫ ЗА ДЕНЬ */
+function GetMassWeightofDay() {
+  var result = Q.defer(); //создание promise
+  var params = {}; //создание объекта для хранения параметров
+  var arr = []; //создание массива для хранения результата
+  params.DateTimeStart = moment().startOf('Day').format('YYYY-MM-DD HH:mm'); //получение начала текущего дня
+  params.DateTimeEnd = moment().endOf('Day').format('YYYY-MM-DD HH:mm'); //получение конца текущего дня
+  socket.emit('GetTotalWeight', params, res => {
+    async.forEachOfSeries(res.Data, async (row, ind) => { //обход значений массива
+      arr.push(row);
+      if (ind == res.Data.length - 1) { //проверка на последний элемент массива
+        result.resolve(arr); //добавление результата в promise
+      }
+    })
+  })
+  return result.promise; //возврат результата в promise
+}
 
 /* ПОЛУЧЕНИЕ ОБЩЕЙ СУММЫ ЗА ДЕНЬ */
 function GetTotalWeight() {
@@ -159,4 +224,23 @@ function FillDateTimemainGraphics() {
   }
 
   SetDatePimePicker(); //установка datetimepicker для полей input
+}
+
+/* ПОЛУЧЕНИЕ ДАННЫХ ПО ВЕСА ЗА КАЖДЫЙ ЧАС */
+function GetDataScalesofHour() {
+  var params = {}; //создание объекта для хранения параметров
+  params.DateTimeStart = moment().startOf('Day').format('YYYY-MM-DD HH:mm'); //получение начала текущего дня
+  params.DateTimeEnd = moment().endOf('Day').format('YYYY-MM-DD HH:mm'); //получение конца текущего дня
+  socket.emit('GetDataScalesofHour', params, res => {
+
+  })
+}
+
+function GetDataScalesHour() {
+  var result = Q.defer();
+  var params;
+  socket.emit('GetDataScalesofHour', params, res => {
+    result.resolve(res);
+  })
+  return result.promise;
 }

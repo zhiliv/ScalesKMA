@@ -77,14 +77,29 @@ io.on('connection', socket => {
   /* ПОЛУЧЕНИЕ ГЛАВНОГО ГРАФИКА */
   socket.on('MainGraphicsApply', (params, callback) => {
     FN.GetMainGraphics(params, res => {
-      callback(res)
+      callback(res); //возврат результата в callback
     })
   });
 
   /* ПОЛУЧЕНИЕ ОБЩЕЙ МАССЫ ЗА ДЕНЬ */
   socket.on('GetTotalWeight', (params, callback) => {
     FN.GetMainGraphics(params, res => {
-      callback(res);
+      callback(res); //возврат результата в callback
     })
   })
+
+  /* ПОЛУЧЕНИЕ ИМЕН ВЕСОВ */
+  socket.on('GetNameScales', callback => {
+    DB.GetNameScales(res => {
+      callback(res); //возврат результата в callback
+    })
+  })
+
+  /* ПОЛУЧЕННИЕ ДАННЫХ ПО ВЕСАМ ЗА КАЖДЫЙ ЧАС */
+  socket.on('GetDataScalesofHour', (params, callback) => {
+    FN.GetDataScalesofHour(params, res => {
+      callback(res)
+    })
+  })
+
 });
