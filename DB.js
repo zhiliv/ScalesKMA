@@ -95,7 +95,7 @@ exports.GetDataNettoOfPeriod = (params, callback) => {
   sql = DB.format(sql, value); //формирование sql запроса со значениями для параметров
   var Obj = {}; //создание нового объекта
   Obj.NameScales = params.NameScales; //доабвление в объект имени весов
-  Obj.typeScaels = 'brutto'; //добалвние в объект типа весов
+  Obj.typeScaels = 'netto'; //добалвние в объект типа весов
   Obj.DateTimeStart = params.DateTimeStart; //дата начала
   Obj.DateTimeEnd = params.DateTimeEnd; //дата окончания
   DB.query(sql, (err, res) => {

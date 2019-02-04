@@ -15,6 +15,7 @@ exports.GetMainGraphics = async (params, callback) => {
   })
   var ListData; //переменная для хранения данных
   await FillNameScalesForData(ListScales, params).then(res => {
+    console.log('TCL: exports.GetMainGraphics -> res', res)
     ListData = res; //присовение переменной значения
   })
   var ListDate; //переменная для хранения списка дат
@@ -484,7 +485,78 @@ exports.GetDataScalesofHour = async (params, callback) => {
   await GetTimeSmen().then(res => { //полчение смен по часам
     ListTimeSmens = res; //добавление результата в переменную
   })
-  callback(ListTimeSmens)
+  var Data;
+  await GetData(ListScales).then(res => {
+    Data = res
+  })
+  CheckSostav(Data).then(res => {
+    callback(res)
+  });
+
+
+  function CheckSostav(Data) {
+    var arr = [];
+    var result = Q.defer();
+    async.forEachOfSeries(Data, async (row, ind) => {
+      var arrNetto = row.Netto.List;
+      var arrBrutto = row.Brutto.List;
+      var NameScales = row.Brutto.NameScales;
+      await Takedata(arrBrutto, arrNetto, NameScales).then(res => {
+        arr.push(res);
+      })
+      if (ind == Data.length - 1) {
+        result.resolve(arr)
+      }
+    })
+    return result.promise;
+
+    function Takedata(arrBrutto, arrNetto, NameScales) {
+      var result = Q.defer();
+      var arrResult = [];
+      async.forEachOfSeries(arrBrutto, async (rowBrutto, indBrutto) => {
+        var DateTimeOpBruttoCompare = rowBrutto.DateTimeOp; //дата для сравнения
+        for (var tmr = 2; tmr <= 12; tmr++) {
+          //цикл для добавления времени
+          var DateOpNettoAdd = moment(DateTimeOpBruttoCompare)
+            .add(tmr, 'minutes')
+            .format('YYYY-MM-DD HH:mm'); //добавление 1 минуты к дате
+          var ConformityValue = _.findWhere(arrNetto, {
+            DateTimeOp: DateOpNettoAdd
+          }); //проверка времени и нахождение элемента
+          if (ConformityValue != undefined) {
+            //проверка элемента на существование
+            var Mass = GetMass(rowBrutto.Mass, ConformityValue.Mass); //разницы БРУТТО-НЕТТО
+            var Obj = {}; //создание объекта
+            Obj.Mass = Mass; //добавление суммы массы в объект
+            Obj.NameScales = NameScales; //добавление имени весов в объект
+            Obj.Date = moment(ConformityValue.DateTimeOp).format('YYYY-MM-DD'); //добавление даты в объект
+            arrResult.push(Obj); //добавление объекта в массив
+          }
+        }
+        if (indBrutto == arrBrutto.length - 1) {
+          result.resolve(arrResult)
+        }
+      })
+      return result.promise;
+    }
+
+
+    /* ПОЛУЧЕНИЕ РАЗНИЦЫ БРУТТО-НЕТТО */
+    function GetMass(Brutto, Netto) {
+      var result = 0; //объявление переменной с результатом
+      if (Brutto == 0) {
+        //проверка БРУТТО на 0
+        result = 0; //присовение 0 результату
+      } else {
+        result = Brutto - Netto; //получение разницы
+        if (result < 0) {
+          //проверка результата
+          result = 0; //присвоение 0 результату
+        }
+      }
+      return result; //возврат результата
+    }
+  }
 
   /* Получение смен по часам */
   function GetTimeSmen() {
@@ -494,4 +566,50 @@ exports.GetDataScalesofHour = async (params, callback) => {
     })
     return result.promise; //возврат результата в promise
   }
+
+  function GetData(ListScales) {
+    var result = Q.defer();
+    var arr = [];
+    var DateStart = moment().startOf('day').format('YYYY-MM-DD HH:mm');
+    var DateEnd = moment().format('YYYY-MM-DD HH:mm');
+    async.forEachOfSeries(ListScales, async (row, ind) => {
+      var resData = {};
+      await GetDataBruttoOfPeriod(DateStart, DateEnd, row).then(res => {
+        resData.Brutto = res;
+      })
+      await GetDataNettoOfPeriod(DateStart, DateEnd, row).then(res => {
+        resData.Netto = res;
+      })
+      await arr.push(resData)
+      if (ind == ListScales.length - 1) {
+        await result.resolve(arr);
+      }
+    })
+    return result.promise;
+
+    function GetDataNettoOfPeriod(DateTimeStart, DateTimeEnd, NameScales) {
+      var result = Q.defer(); //создание promise
+      var params = {}; //содаем объект жля ханения параетров
+      params.DateTimeStart = DateTimeStart; //добавление даты начала в параметр
+      params.DateTimeEnd = DateTimeEnd; //добавление даты конца в обхект
+      params.NameScales = NameScales; //добавление имени весов в обхект
+      DB.GetDataNettoOfPeriod(params, res => { //получение результата из БД
+        result.resolve(res); //добавление результата в promise
+      })
+      return result.promise; //вовзврат результата в promise
+    }
+
+    function GetDataBruttoOfPeriod(DateTimeStart, DateTimeEnd, NameScales) {
+      var result = Q.defer(); //создание promise
+      var params = {}; //содаем объект жля ханения параетров
+      params.DateTimeStart = DateTimeStart; //добавление даты начала в параметр
+      params.DateTimeEnd = DateTimeEnd; //добавление даты конца в обхект
+      params.NameScales = NameScales; //добавление имени весов в обхект
+      DB.GetDataBruttoOfPeriod(params, res => { //получение результата из БД
+        result.resolve(res); //добавление результата в promise
+      })
+      return result.promise; //вовзврат результата в promise
+    }
+  }
+
 }

@@ -31,10 +31,8 @@ $(window).on('load', async () => {
       Addcard(row.name, MassOfDay); //добавление элментов с весами
     })
   })
-  await GetDataScalesofHour();
-  await GetDataScalesHour().then(res => {
+  await GetDataScalesofHour().then(res => {
     console.log('TCL: res', res)
-
   })
 });
 
@@ -228,19 +226,10 @@ function FillDateTimemainGraphics() {
 
 /* ПОЛУЧЕНИЕ ДАННЫХ ПО ВЕСА ЗА КАЖДЫЙ ЧАС */
 function GetDataScalesofHour() {
-  var params = {}; //создание объекта для хранения параметров
-  params.DateTimeStart = moment().startOf('Day').format('YYYY-MM-DD HH:mm'); //получение начала текущего дня
-  params.DateTimeEnd = moment().endOf('Day').format('YYYY-MM-DD HH:mm'); //получение конца текущего дня
-  socket.emit('GetDataScalesofHour', params, res => {
-
-  })
-}
-
-function GetDataScalesHour() {
   var result = Q.defer();
-  var params;
+  var params = {}; //создание объекта для хранения параметров
   socket.emit('GetDataScalesofHour', params, res => {
-    result.resolve(res);
+    result.resolve(res)
   })
   return result.promise;
 }
