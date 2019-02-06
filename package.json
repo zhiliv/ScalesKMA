@@ -12,14 +12,15 @@
     "jquery": "^3.3.1",
     "moment": "^2.24.0",
     "mysql": "^2.16.0",
-    "nodemon": "^1.18.9",
     "npm-check": "^5.9.0",
     "q": "^1.5.1",
     "socket.io": "^2.2.0",
     "underscore": "^1.9.1",
     "xml2js": "^0.4.19"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^1.18.9"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
