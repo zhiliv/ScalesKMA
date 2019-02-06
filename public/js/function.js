@@ -32,7 +32,7 @@ $ (window).on ('load', async () => {
       Addcard (row.name, MassOfDay); //добавление элментов с весами
     });
   });
-  await GetDataScalesofHour ().then (res => {
+  await GetDataScalesofHour ().then (res => { //получение данных по часам
     EventClickCard (res);
     //
   });

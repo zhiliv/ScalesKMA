@@ -1,15 +1,16 @@
 'use strict';
 
-var Q = require('q'),
-	_ = require('underscore'),
-	async = require('async'),
+var Q = require('q'), //подключение модуля для работы с promise
+	_ = require('underscore'), //подключение модуля для работы с массивами и объектами
+	async = require('async'), //подключение модуля для ассинхронных операция
 	moment = require('moment'), //подключение momentjs
 	DB = require('./DB'); //подключения модуля для работы с БД
 
 moment.locale('ru'); //указание локации у moment js
 
+/* ПОЛУЧЕНИЕ ДАННЫХ ДЛЯ ГРАФИКА */
 exports.GetMainGraphics = async (params, callback) => {
-	var ListScales;//переменная для храения списка весов
+	var ListScales; //переменная для храения списка весов
 	await FillScales().then(res => {
 		//получение списка весов
 		ListScales = res; //присвоение переменной значения результата
@@ -68,50 +69,58 @@ exports.GetMainGraphics = async (params, callback) => {
 
 	/* Сортировка массива и добалвение 0 к отсутствующим датам */
 	async function OrganizationArrValues(ListDate, arrData) {
-		var result = Q.defer();
+		var result = Q.defer(); //создание promise
 		var TempArrData; //создание массива для временного хранения данных
 		await TempArrData(arrData).then(res => {
 			//формирование временного массива
 			TempArrData = res; //присовение переменной результата
 		});
 
-		var arrNameScales;
+		var arrNameScales; //пересенная для хранения массива имен весов
 		await GetNameScales(arrData).then(res => {
-			arrNameScales = res;
+			//получние именвесов
+			arrNameScales = res; //присвоение перес=менной результата
 		});
 
 		await GetresultArr(TempArrData, labelDate).then(res => {
-			result.resolve(res);
+			//получение данных по весам в виде массива
+			result.resolve(res); //добавление результата в promise
 		});
-		return result.promise;
+		return result.promise; //возврат результата в promise
 
+		/* ПОЛУЧЕНИЕ ИМЕН ВЕСОВ  */
 		function GetNameScales(arrData) {
-			var result = Q.defer();
-			var arrNameScales = [];
+			var result = Q.defer(); //создание promise
+			var arrNameScales = []; //создание массива для хранения результата
 			async.forEachOfSeries(arrData, async (row, ind) => {
+				//обход значений массивв
 				arrNameScales.push(row[0].NameScales); //формированеи массива со спискем имен весов
 				if (ind == arrData.length - 1) {
-					result.resolve(arrNameScales);
+					//проверка на последний элементмассива
+					result.resolve(arrNameScales); //добавление результата в promise
 				}
 			});
-			return result.promise;
+			return result.promise; //возвдрат резульатата в promise
 		}
 
+		/* ПОЛУЧЕНИЕ ДАННЫХ ПО ВЕСАМ В ВИДЕ МАССИВА0*/
 		function GetresultArr(TempArrData, ListDate) {
-			var TmpArrResult = [];
-			var result = Q.defer();
+			var TmpArrResult = []; //создание массива
+			var result = Q.defer(); //создание promise
 			ListDate.forEach((rowListDate, indListDate) => {
+				//обход значений массива
 				//обход массива с датами
 				var TMP = _.where(TempArrData, {
-					Date: rowListDate,
+					//находжение элемента в массиве с определенной датой
+					Date: rowListDate, //параметр поиска
 				}); //нахождение (проверка на сущестоввание) элемента массиа
 				if (TMP.length != arrNameScales.length) {
 					//првоерка на существование массива
 					arrNameScales.forEach(async (rowNameScales, indNameScales) => {
 						//обход всех имен весов
 						var CheckScales = _.where(TempArrData, {
-							NameScales: rowNameScales,
-							Date: rowListDate,
+							NameScales: rowNameScales, //параметр имя весов
+							Date: rowListDate, //параметр даты
 						}); //нахождение элемента мссива по свойству объетка(првоерка на существование)
 						if (CheckScales.length == 0) {
 							//проверка длины занчения
@@ -220,29 +229,33 @@ exports.GetMainGraphics = async (params, callback) => {
 	/* ПОЛУЧЕНИЕ МАССЫ ДОБЫЧИ */
 	async function GetSostavGroupOfVagonsForDay(InpParams, NameScales) {
 		var result; //переменная для хранения результата
-		var params = {};
-		params = InpParams;
-		params.NameScales = NameScales;
-		var ArrInitial;
+		var params = {}; //создание объкта для хранения параметров
+		params = InpParams; //установка параметров
+		params.NameScales = NameScales; //добавление в параметр имени весов
+		var ArrInitial; //создание переменной для хранения начального результата
 		await FillArr(params).then(res => {
-			ArrInitial = res;
+			//получение начальных данныъх
+			ArrInitial = res; //присовнеие результата переменной
 		});
-		var arrDate;
+		var arrDate; //создание переменной для хранения массива дат
 		await GetArrDate(ArrInitial).then(res => {
-			arrDate = res;
+			arrDate = res; //присвоение переменной результата
 		}); //получение массива дат(по дням)
-		var ResArrDate;
+		var ResArrDate; //ооздание переменной для хранения данных с результо по датам
 		await GetArrDateDay(arrDate, params.DateTimeEnd).then(res => {
-			ResArrDate = res;
+			//получение резульатата по датам
+			ResArrDate = res; //присовение переменной значения
 		}); //получение массива уникальных дней
-		var DataScales;
+		var DataScales; //переменная для хранения данных по весам
 		await FillArrDate(ResArrDate, params.NameScales).then(res => {
-			DataScales = res;
+			//получение данных по весам
+			DataScales = res; //присвоение переменной значения
 		}); //объод массива с уникальными днями
 		await CheckSostavOfTime(DataScales).then(res => {
-			result = res;
+			//формирирование массива с составами по времени
+			result = res; //присвоение перменной значнеия
 		});
-		return result;
+		return result; //возврат результата
 
 		/* ПРОВЕРКА СООТВЕТСТВИЯ СОСТАВF И ВРЕМЕНИ */
 		function CheckSostavOfTime(DataScales) {
@@ -282,6 +295,7 @@ exports.GetMainGraphics = async (params, callback) => {
 					}
 				});
 				if (indRowBrutto == arrBrutto.length - 1) {
+					//проверка на последний элемент массива
 					result.resolve(GetArrResult(arrResult)); //добавление результата в promise
 				}
 			});
@@ -323,7 +337,7 @@ exports.GetMainGraphics = async (params, callback) => {
 					Obj.NameScales = NameScales; //добавление имени весов
 					arr.push(Obj); //добавление объекта в массив
 				}
-				return arr;
+				return arr; //возврат массива
 			}
 		}
 
@@ -350,8 +364,9 @@ exports.GetMainGraphics = async (params, callback) => {
 					result.resolve(res);
 				}
 			});
-			return result.promise;
+			return result.promise; //возврат результата в promise
 
+			/* ПОЛУЧЕНИЕ ДАННЫХ НЕТТО ЗА ПЕРИОД */
 			function GetDataNettoOfPeriod(DateTimeStart, DateTimeEnd, NameScales) {
 				var result = Q.defer(); //создание promise
 				var params = {}; //содаем объект жля ханения параетров
@@ -365,6 +380,7 @@ exports.GetMainGraphics = async (params, callback) => {
 				return result.promise; //вовзврат результата в promise
 			}
 
+			/* ПОЛУЧЕНИЕ ДБРУТТО ЗА ПЕРИОД */
 			function GetDataBruttoOfPeriod(DateTimeStart, DateTimeEnd, NameScales) {
 				var result = Q.defer(); //создание promise
 				var params = {}; //содаем объект жля ханения параетров
@@ -391,22 +407,24 @@ exports.GetMainGraphics = async (params, callback) => {
 				}
 				var EndDate = moment(new Date(row))
 					.endOf('day')
-					.format('YYYY-MM-DD HH:mm'); //начало дня
+					.format('YYYY-MM-DD HH:mm'); //конец дня
 				var StartDay = moment(new Date(row))
 					.startOf('day')
 					.format('YYYY-MM-DD HH:mm'); //начало дня
 				var ind = arrDate
 					.map(row => {
-						return row.StartDay;
+						return row.StartDay; //возврат даты
 					})
 					.indexOf(StartDay); //поиск в массиве элементов
 				if (ind == -1) {
+					//проверка на существование
 					var Obj = {}; //создание новго объекта
 					Obj.StartDay = StartDay; //добавление даты начала
 					Obj.EndDay = EndDate; //добавление даты окончания
 					await arrDate.push(Obj); //добавление объекта в массив
 				}
 				if (indRow == List.length - 1) {
+					//проверка на последний элемент
 					//проверка на последнюю запись в массиве
 					arrDate = ChangeDateRow(arrDate, BeginDate, DateTimeEnd); //переформирование объектов массива
 					result.resolve(arrDate); //добавление результата в promise
@@ -550,7 +568,7 @@ exports.GetDataScalesofHour = async (params, callback) => {
 			//обход знечений
 			await CheckDate(rowTimeSmen, Data).then(async res => {
 				//проверка дат на состветствие
-				arr.push(res); //добавление в массив обекта
+				await arr.push(res); //добавление в массив обекта
 			});
 			if (indTimeSmen == ListTimeSmens.length - 1) {
 				//првоерка на последний элемент
@@ -635,6 +653,7 @@ exports.GetDataScalesofHour = async (params, callback) => {
 		function Takedata(arrBrutto, arrNetto, NameScales) {
 			var result = Q.defer(); //создание promise
 			var arrResult = []; //создание массива
+
 			async.forEachOfSeries(arrBrutto, async (rowBrutto, indBrutto) => {
 				//обход значений
 				var DateTimeOpBruttoCompare = rowBrutto.DateTimeOp; //дата для сравнения
@@ -654,6 +673,7 @@ exports.GetDataScalesofHour = async (params, callback) => {
 						Obj.NameScales = NameScales; //добавление имени весов в объект
 						Obj.Date = moment(ConformityValue.DateTimeOp).format('YYYY-MM-DD HH:mm'); //добавление даты в объект
 						arrResult.push(Obj); //добавление объекта в массив
+						break;
 					}
 				}
 				if (indBrutto == arrBrutto.length - 1) {
@@ -691,6 +711,7 @@ exports.GetDataScalesofHour = async (params, callback) => {
 		return result.promise; //возврат результата в promise
 	}
 
+	/* ПОЛУЧЕНИЕ ДАННЫХ */
 	function GetData(ListScales) {
 		var result = Q.defer(); //создание promise
 		var arr = []; //создание массива
@@ -717,6 +738,7 @@ exports.GetDataScalesofHour = async (params, callback) => {
 		});
 		return result.promise; //возврат promise
 
+		/* ПОЛУЧЕНИЕ ДАННЫХ НЕТТО ЗА ПЕРИОД */
 		function GetDataNettoOfPeriod(DateTimeStart, DateTimeEnd, NameScales) {
 			var result = Q.defer(); //создание promise
 			var params = {}; //содаем объект жля ханения параетров
@@ -730,6 +752,7 @@ exports.GetDataScalesofHour = async (params, callback) => {
 			return result.promise; //вовзврат результата в promise
 		}
 
+		/* ПОЛУЧЕНИЕ ДАННЫХ БУРУТТО */
 		function GetDataBruttoOfPeriod(DateTimeStart, DateTimeEnd, NameScales) {
 			var result = Q.defer(); //создание promise
 			var params = {}; //содаем объект жля ханения параетров
@@ -745,6 +768,7 @@ exports.GetDataScalesofHour = async (params, callback) => {
 	}
 };
 
+/* ПОЛУЧНИЕ ДАННЫХ ЗА ДЕНЬ */
 exports.GetTotalWeight = async (params, callback) => {
 	var ListScales; //переменная для хранения имен весов
 	await FillScales().then(res => {
@@ -805,50 +829,55 @@ exports.GetTotalWeight = async (params, callback) => {
 
 	/* Сортировка массива и добалвение 0 к отсутствующим датам */
 	async function OrganizationArrValues(ListDate, arrData) {
-		var result = Q.defer();
+		var result = Q.defer(); //создание promise
 		var TempArrData; //создание массива для временного хранения данных
 		await TempArrData(arrData).then(res => {
 			//формирование временного массива
 			TempArrData = res; //присовение переменной результата
 		});
-
-		var arrNameScales;
+		var arrNameScales; //переменная для зранения массива имен весов
 		await GetNameScales(arrData).then(res => {
-			arrNameScales = res;
+			//получение имен весов
+			arrNameScales = res; //присвоение переменной результатта
 		});
-
 		await GetresultArr(TempArrData, labelDate).then(res => {
-			result.resolve(res);
+			//получение массива с результатом
+			result.resolve(res); //добалвение результатат в promise
 		});
-		return result.promise;
+		return result.promise; //возврат результата в promise
 
+		/* ПОЛУЧЕНИЕ ИМЕН ВЕСОВ */
 		function GetNameScales(arrData) {
-			var result = Q.defer();
-			var arrNameScales = [];
+			var result = Q.defer(); //создание promise
+			var arrNameScales = []; //создание массива
 			async.forEachOfSeries(arrData, async (row, ind) => {
+				//обход значений массива
 				arrNameScales.push(row[0].NameScales); //формированеи массива со спискем имен весов
 				if (ind == arrData.length - 1) {
-					result.resolve(arrNameScales);
+					//проверка на последний элемент массиава
+					result.resolve(arrNameScales); //добавление результа в promise
 				}
 			});
-			return result.promise;
+			return result.promise; //возврт результата в promise
 		}
 
+		/* ПОЛУЧЕНИЕ РЕЗУЛЬТАТА В ВИДЕ МАССИВА */
 		function GetresultArr(TempArrData, ListDate) {
-			var TmpArrResult = [];
-			var result = Q.defer();
+			var TmpArrResult = []; //создание массива
+			var result = Q.defer(); //создание promise
 			ListDate.forEach((rowListDate, indListDate) => {
+				//обход значений массива
 				//обход массива с датами
 				var TMP = _.where(TempArrData, {
-					Date: rowListDate,
+					Date: rowListDate, //параметр поиска
 				}); //нахождение (проверка на сущестоввание) элемента массиа
 				if (TMP.length != arrNameScales.length) {
 					//првоерка на существование массива
 					arrNameScales.forEach(async (rowNameScales, indNameScales) => {
 						//обход всех имен весов
 						var CheckScales = _.where(TempArrData, {
-							NameScales: rowNameScales,
-							Date: rowListDate,
+							NameScales: rowNameScales, //параметр поиска (Имя весов)
+							Date: rowListDate, //параметр поиска (Дата)
 						}); //нахождение элемента мссива по свойству объетка(првоерка на существование)
 						if (CheckScales.length == 0) {
 							//проверка длины занчения
@@ -881,7 +910,7 @@ exports.GetTotalWeight = async (params, callback) => {
 					result.resolve(TmpArrResult); //добавление результата в promise
 				}
 			});
-			return result.promise;
+			return result.promise; //возврат результата  в promise
 		}
 
 		/* ФОРМИРОВАНИЕ ВРЕМЕННОГО МАССИВА */
@@ -957,36 +986,42 @@ exports.GetTotalWeight = async (params, callback) => {
 	/* ПОЛУЧЕНИЕ МАССЫ ДОБЫЧИ */
 	async function GetSostavGroupOfVagonsForDay(InpParams, NameScales) {
 		var result; //переменная для хранения результата
-		var params = {};
-		params = InpParams;
-		params.NameScales = NameScales;
-		var ArrInitial;
+		var params = {}; //создание объекта для хранения параметров
+		params = InpParams; //рисовение парамтров
+		params.NameScales = NameScales; // добавление свойства с именем весов
+		var ArrInitial; //объяление переменной для хранения начального массива
 		await FillArr(params).then(res => {
-			ArrInitial = res;
+			//формирование начального массива
+			ArrInitial = res; //присвоение результата переменной
 			if (ArrInitial.List.length == 0) {
+				// проверка на длину массива
 				ArrInitial.List.push({
 					DateTimeOp: InpParams.DateTimeStart,
 					CountVagons: 0,
 					Mass: 0,
-				});
+				}); // добалвние в массив
 			}
 		});
-		var arrDate;
+		var arrDate; //переменная для хранения дат
 		await GetArrDate(ArrInitial).then(res => {
-			arrDate = res;
+			//получение дат
+			arrDate = res; // присвоение переменной результата
 		}); //получение массива дат(по дням)
-		var ResArrDate;
+		var ResArrDate; // переменная для хранения данных по датам
 		await GetArrDateDay(arrDate, params.DateTimeEnd).then(res => {
-			ResArrDate = res;
+			//получение данных за день
+			ResArrDate = res; // присвоение результата перпеменной
 		}); //получение массива уникальных дней
-		var DataScales;
+		var DataScales; // переменная для хранения даных с весов
 		await FillArrDate(ResArrDate, params.NameScales).then(res => {
-			DataScales = res;
+			//формирование массива с данными по датам
+			DataScales = res; //присвоение результата переменной
 		}); //объод массива с уникальными днями
 		await CheckSostavOfTime(DataScales).then(res => {
-			result = res;
+			//формирование данных по составаи и по времени
+			result = res; // присвоение переменной результата
 		});
-		return result;
+		return result; // возврат результата
 
 		/* ПРОВЕРКА СООТВЕТСТВИЯ СОСТАВF И ВРЕМЕНИ */
 		function CheckSostavOfTime(DataScales) {
@@ -994,7 +1029,7 @@ exports.GetTotalWeight = async (params, callback) => {
 			var arrResult = []; //создание массива
 			var arrBrutto = DataScales.Brutto; //массив "Нетто"
 			var arrNetto = DataScales.Netto; //массив "Брутто"
-			
+
 			_.each(arrBrutto, async (rowBrutto, indRowBrutto) => {
 				//объод массива
 				var DateStartBrutto = rowBrutto.DateTimeStart; //дата начала
@@ -1027,6 +1062,7 @@ exports.GetTotalWeight = async (params, callback) => {
 					}
 				});
 				if (indRowBrutto == arrBrutto.length - 1) {
+					//проверка на послдений элемент массива
 					result.resolve(GetArrResult(arrResult)); //добавление результата в promise
 				}
 			});
@@ -1068,7 +1104,7 @@ exports.GetTotalWeight = async (params, callback) => {
 					Obj.NameScales = NameScales; //добавление имени весов
 					arr.push(Obj); //добавление объекта в массив
 				}
-				return arr;
+				return arr; //возврат результата
 			}
 		}
 
@@ -1092,11 +1128,12 @@ exports.GetTotalWeight = async (params, callback) => {
 					//проверка на последиее значение массива
 					res.Brutto = arrBrutto; //добавление в объект массива "Брутто"
 					res.Netto = arrNetto; //добавление в объект массива "Нетто"
-					result.resolve(res);
+					result.resolve(res); //добавление результата в promise
 				}
 			});
-			return result.promise;
+			return result.promise; //возврат результата в promise
 
+			/*ПОЛУЧНЕИЕ ДАННЫХ НЕТТО ЗА ПЕРИОД */
 			function GetDataNettoOfPeriod(DateTimeStart, DateTimeEnd, NameScales) {
 				var result = Q.defer(); //создание promise
 				var params = {}; //содаем объект жля ханения параетров
@@ -1110,6 +1147,7 @@ exports.GetTotalWeight = async (params, callback) => {
 				return result.promise; //вовзврат результата в promise
 			}
 
+			/* ПОЛУЧНИЕ ДАННЫХ БРУТТО ЗА ПЕРИОД */
 			function GetDataBruttoOfPeriod(DateTimeStart, DateTimeEnd, NameScales) {
 				var result = Q.defer(); //создание promise
 				var params = {}; //содаем объект жля ханения параетров
@@ -1143,7 +1181,7 @@ exports.GetTotalWeight = async (params, callback) => {
 				var ind = arrDate
 					.map(row => {
 						return row.StartDay;
-					})
+					}) //возврат индекса
 					.indexOf(StartDay); //поиск в массиве элементов
 				if (ind == -1) {
 					var Obj = {}; //создание новго объекта
