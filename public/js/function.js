@@ -41,7 +41,6 @@ $ (window).on ('load', async () => {
 function EventClickCard (data) {
   $ ('.TotalData').on ('click', (el, ind) => {
     var NameScales = $ (el.target).attr ('value');
-    console.log ('TCL: EventClickCard -> NameScales', NameScales);
     FillTemplateModal (data, NameScales);
     $ ('#DataOfHour').modal ();
   });
@@ -49,9 +48,7 @@ function EventClickCard (data) {
 
 function FillTemplateModal (data, NameScales) {
   $ ('.modal-body').empty ();
-  console.log ('TCL: FillTemplateModal -> data', data);
   socket.emit ('GetTimeSmen', schedule => {
-    console.log ('TCL: FillTemplateModal -> res', schedule);
     var NumSmenList = _.groupBy (schedule, 'NumSmen');
     var KeySmenList = _.keys (NumSmenList);
     async.eachOfSeries (KeySmenList, async (row, ind) => {
@@ -85,7 +82,6 @@ function FillTemplateModal (data, NameScales) {
           $ ('<span>', {
             text: ' ' + SumMassHour + 'т.',
           }).appendTo (div);
-          console.log ('TCL: FillTemplateModal -> DataHour', DataHour);
           $ ('<br>').appendTo (div);
         }
       });
@@ -299,7 +295,6 @@ function GetDataScalesofHour () {
   socket.emit ('GetDataScalesofHour', params, res => {
     var groupData = _.groupBy (res, 'NameScales');
     groupData = _.toArray (groupData); //конвертируем объект в массив
-    console.log ('TCL: GetDataScalesofHour -> groupData', groupData);
     result.resolve (res);
   });
   return result.promise;
