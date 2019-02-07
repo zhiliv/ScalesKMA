@@ -54,8 +54,10 @@ function DefineError (err, FuncName) {
 
 /* ПОЛУЧЕНИЕ ИМЕН ВЕСОВ */
 exports.GetNameScales = callback => {
-  var sql = 'SELECT DISTINCT name FROM AdressScales'; //формирование звапроса
+  var sql = 'SELECT DISTINCT Name FROM AdressScales'; //формирование звапроса
+	console.log('TCL: sql', sql)
   DB.query (sql, (err, rows) => {
+		console.log('TCL: rows', rows)
     //выполнение запроса
     DefineError (err, 'GetNameScales'); //обрабока ошибок
     callback (rows); //возвратрезультата в callback
@@ -104,6 +106,27 @@ exports.GetDataBruttoOfPeriod = (params, callback) => {
     callback (Obj);
   });
 };
+
+/* получение адресса нетто по имени весов */
+exports.GetNettoAdress = (ScalseAdress, callback) => {
+	var sql = 'SELECT * FROM AdressScales WHERE Name=? AND typeScales="netto"';
+	var value = [[ScalseAdress]];
+	sql = DB.format(sql, value);
+	DB.query(sql, (err, rows) => {
+		return callback(rows);
+	});
+};
+
+/* получение адресса брутто по имени весов */
+exports.GetBruttoAdress = (ScalseAdress, callback) => {
+	var sql = 'SELECT * FROM AdressScales WHERE Name=? AND typeScales="brutto"';
+	var value = [[ScalseAdress]];
+	sql = DB.format(sql, value);
+	DB.query(sql, (err, rows, fields) => {
+		return callback(rows);
+	});
+};
+/* ---------- */
 
 /* ПОЛУЧЕНИЕ ДАННЫХ С ВЕСОВ БРУТТО ЗА ПЕРИОД */
 exports.GetDataNettoOfPeriod = (params, callback) => {
