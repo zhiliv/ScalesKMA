@@ -1,0 +1,20 @@
+Устранить ошибку
+
+D:\ServerScales\XMLtoDB\node_modules\mysql\lib\protocol\Parser.js:80
+        throw err; // Rethrow non-MySQL errors
+        ^
+
+TypeError: Cannot read property 'Sostav' of null
+    at parse.GetDataFile.DataFile (D:\ServerScales\XMLtoDB\server.js:102:36)
+    at Object.exports.GetDataFile (D:\ServerScales\XMLtoDB\Parse.js:76:10)
+    at FillScales.DB.GetNettoAdress.NettoAdress (D:\ServerScales\XMLtoDB\server.js:92:13)
+    at Query.DB.query (D:\ServerScales\XMLtoDB\DB.js:52:12)
+    at Query.<anonymous> (D:\ServerScales\XMLtoDB\node_modules\mysql\lib\Connection.js:502:10)
+    at Query._callback (D:\ServerScales\XMLtoDB\node_modules\mysql\lib\Connection.js:468:16)
+    at Query.Sequence.end (D:\ServerScales\XMLtoDB\node_modules\mysql\lib\protocol\sequences\Sequence.js:83:24)
+    at Query._handleFinalResultPacket (D:\ServerScales\XMLtoDB\node_modules\mysql\lib\protocol\sequences\Query.js:139:8)
+    at Query.EofPacket (D:\ServerScales\XMLtoDB\node_modules\mysql\lib\protocol\sequences\Query.js:123:8)
+    at Protocol._parsePacket (D:\ServerScales\XMLtoDB\node_modules\mysql\lib\protocol\Protocol.js:278:23)
+
+
+Press Enter or Esc to close console...

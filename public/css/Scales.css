@@ -45,3 +45,7 @@ html {
 .time {
   font-weight: bold
 }
+
+.Statistics thead > th{
+  font-weight: bold
+}

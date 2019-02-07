@@ -111,4 +111,11 @@ io.on ('connection', socket => {
       callback (res);
     });
   });
+
+  /* ПОЛУЧЕНИЕ ДАННЫХ СТАТИСТИКИ */
+  socket.on('GetStatistics', callback => {
+    DB.GetStatistics(res => {
+      callback(res);
+    })
+  })
 });

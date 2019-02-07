@@ -134,3 +134,11 @@ exports.GetTimeSmen = callback => {
     callback (rows);
   });
 };
+
+/* ПОЛИТЬ ПОСЛЕДНИЕ 400 ЗАПИСЕЙ ИЗ ТАБЛИЦЫ "STATISTICS" */
+exports.GetStatistics =  callback => {
+  var sql = 'SELECT * FROM Statistics ORDER BY id DESC LIMIT 200';
+  DB.query(sql, (err, rows)=> {
+    callback(rows);
+  })
+}
