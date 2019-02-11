@@ -55,9 +55,7 @@ function DefineError (err, FuncName) {
 /* ПОЛУЧЕНИЕ ИМЕН ВЕСОВ */
 exports.GetNameScales = callback => {
   var sql = 'SELECT DISTINCT Name FROM AdressScales'; //формирование звапроса
-	console.log('TCL: sql', sql)
   DB.query (sql, (err, rows) => {
-		console.log('TCL: rows', rows)
     //выполнение запроса
     DefineError (err, 'GetNameScales'); //обрабока ошибок
     callback (rows); //возвратрезультата в callback
@@ -165,3 +163,50 @@ exports.GetStatistics =  callback => {
     callback(rows);
   })
 }
+
+/* обзод значений ваговов */
+exports.BypassungVagon = data => {
+	data = data[0];
+	var Vagon = data['data']['Sostav']['Vagon'];
+	var CountWagons = Vagon.length;
+	var typeScales = data['typeScales'];
+	var dateWeighing = data['date'];
+	var Scales = data['Sclares'];
+	for (var j = 0; j <= Vagon.length - 1; j++) {
+		var NvagInSostav = Vagon[j]['NvagInSostav'];
+		var Mass = Vagon[j]['Massa'];
+		var Speed = Vagon[j]['Speed'];
+		InsertData([[dateWeighing], [CountWagons], [NvagInSostav], [Mass], [Speed], [typeScales], [Scales]]);
+	}
+};
+
+
+/* добавление в БД */
+function InsertData(value) {
+	var sql =
+		'INSERT INTO DataScales (DateTimeOp, CountWagons, NumVagons, Mass, Speed, typeScales, Scales) VALUES (?, ?, ?, ?, ?, ?, ?)';
+	sql = DB.format(sql, value);
+	DB.query(sql, (err, result) => {
+		var date = new Date();
+		if (err)
+			throw console.log(
+				clc.red(dateFormat(date, 'isoDate') + ' ' + dateFormat(date, 'isoTime') + ' Произошла ошибка:' + err)
+			);
+	});
+}
+
+/* добавление динных в БД о полученных данных для статистики */
+exports.InsertStatistics = params => {
+	var sql =
+		'INSERT INTO Statistics (DateTimeParse, DateTimeWeighing, CountVagons, SummMass, TypeScale, AdrScales) VALUES (?,?,?,?,?,?)';
+	sql = DB.format(sql, params);
+	DB.query(sql);
+};
+
+/* получение послудних 100 срок для вкладки "Статистика получаемых данных" */
+exports.AllRows = callback => {
+	var sql = 'SELECT * FROM Statistics ORDER BY id DESC LIMIT 100';
+	DB.query(sql, (err, rows, fiels) => {
+		return callback(rows);
+	});
+};

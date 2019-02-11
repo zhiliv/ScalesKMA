@@ -121,12 +121,13 @@ function GetDataFile(DirName, TypeScales, Scales, callback) {
 	return callback(result);
 }
 
+
+
 /* получение параметров весов */
 exports.FillScales = ScalesAdress => {
 	DB.GetNettoAdress([[ScalesAdress]], NettoAdress => {
 		//получение адреса нетто
 		NettoAdress.forEach((rowNettoAdress, index) => {
-			console.log('TCL: rowNettoAdress', rowNettoAdress)
 			//обход всех значений
 			var AdressNetto = rowNettoAdress['Adress']; //переменная для адресса нетто
 			GetDataFile(AdressNetto, 'netto', ScalesAdress, DataFile => {

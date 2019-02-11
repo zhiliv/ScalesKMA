@@ -6,7 +6,7 @@ $.datetimepicker.setLocale('ru'); //установка локации для dat
 
 /* ПРИ ЗАГРУЗКЕ СТРАНИЦЫ */
 $(window).on('load', async () => {
-  NavTabClick()
+	NavTabClick();
 	$('.mainloader').removeClass('h-100'); //удаление класса
 	$('.mainloader .spinner-border').hide(); //скрыть элемент с лоадером
 	$('#Data').show('', () => {
@@ -41,74 +41,79 @@ $(window).on('load', async () => {
 	});
 });
 
-function NavTabClick(){
-  BtnGraphics();
-  BtnStatistic();
+function NavTabClick() {
+	BtnGraphics();
+	BtnStatistic();
 
-  /* УДАЛЕНИЕ ВЫДЕЛЕННЫХ ПУНКТОВ МЕНЮ */
-function DelActiveNav(){
-  $('.MainNav ul > li').removeClass('active'); //удаление класса
-}
+	/* УДАЛЕНИЕ ВЫДЕЛЕННЫХ ПУНКТОВ МЕНЮ */
+	function DelActiveNav() {
+		$('.MainNav ul > li').removeClass('active'); //удаление класса
+	}
 
+	function BtnGraphics() {
+		DelActiveNav(); //удаление выдлеения в меню
+		$('#ItemMainNav_Graphics').on('click', el => {
+			location.reload(); //обновление страницы
+		});
+	}
 
-  function BtnGraphics(){
-    DelActiveNav();//удаление выдлеения в меню
-    $('#ItemMainNav_Graphics').on('click', el => {
-      location.reload(); //обновление страницы
-    })
-  }
-
-  /* ОБРАБОТКА НАЖАТИЯ КНОПКИ "ИСТОРИЯ ПОЛУЧАЕМЫХ ДАННЫХ" */
-function BtnStatistic() {
-  $('#ItemMainNav_Statistics').on('click', el => { //обработка события клик 
-    DelActiveNav();//удаление выделения пункта меню
-		$('#MainData').empty(); //очистка блока 
-    $('#MainData').load('public/Forms/Statistic.html', () => { //загрузка формы
-      $(el.target).parent().addClass('active');
-			$('tbody').empty(); //очистка таблицы
-			socket.emit('GetStatistics', async res => { //отправка сокет запроса для получения статистики
-				async.eachOfSeries(res, async (row, ind) => { //обход всех строк 
-					var tr = $('<tr>').appendTo('tbody'); //создание элемента tr
-					$('<th>', {
-            class: 'text-center',
-						text: row.id,
-						scope: row,
-					}).appendTo(tr); //создание элемента
-					$('<td>', {
-            class: 'text-center',
-						text: moment(row.DateTimeParse).format('DD.MM.YYYY  hh:mm'),
-					}).appendTo(tr);//создание элемента
-					$('<td>', {
-            class: 'text-center',
-						text: moment(row.DateTimeWeighing).format('DD.MM.YYYY  hh:mm'),
-					}).appendTo(tr);//создание элемента
-					$('<td>', {
-            class: 'text-center',
-						text: row.CountVagons,
-					}).appendTo(tr);//создание элемента
-					$('<td>', {
-            class: 'text-center',
-						text: row.SummMass,
-					}).appendTo(tr);//создание элемента
-					$('<td>', {
-            class: 'text-center',
-						text: row.TypeScale,
-					}).appendTo(tr);//создание элемента
-					$('<td>', {
-            class: 'text-center',
-						text: row.AdrScales,
-					}).appendTo(tr);//создание элемента
+	/* ОБРАБОТКА НАЖАТИЯ КНОПКИ "ИСТОРИЯ ПОЛУЧАЕМЫХ ДАННЫХ" */
+	function BtnStatistic() {
+		$('#ItemMainNav_Statistics').on('click', el => {
+			//обработка события клик
+			DelActiveNav(); //удаление выделения пункта меню
+			$('#MainData').empty(); //очистка блока
+			$('#MainData').load('public/Forms/Statistic.html', () => {
+				//загрузка формы
+				$(el.target)
+					.parent()
+					.addClass('active');
+				$('tbody').empty(); //очистка таблицы
+				socket.emit('GetStatistics', async res => {
+					//отправка сокет запроса для получения статистики
+					async.eachOfSeries(res, async (row, ind) => {
+						//обход всех строк
+						var tr = $('<tr>').appendTo('tbody'); //создание элемента tr
+						$('<th>', {
+							class: 'text-center',
+							text: row.id,
+							scope: row,
+						}).appendTo(tr); //создание элемента
+						$('<td>', {
+							class: 'text-center',
+							text: moment(row.DateTimeParse).format('DD.MM.YYYY  hh:mm'),
+						}).appendTo(tr); //создание элемента
+						$('<td>', {
+							class: 'text-center',
+							text: moment(row.DateTimeWeighing).format('DD.MM.YYYY  hh:mm'),
+						}).appendTo(tr); //создание элемента
+						$('<td>', {
+							class: 'text-center',
+							text: row.CountVagons,
+						}).appendTo(tr); //создание элемента
+						$('<td>', {
+							class: 'text-center',
+							text: row.SummMass,
+						}).appendTo(tr); //создание элемента
+						$('<td>', {
+							class: 'text-center',
+							text: row.TypeScale,
+						}).appendTo(tr); //создание элемента
+						$('<td>', {
+							class: 'text-center',
+							text: row.AdrScales,
+						}).appendTo(tr); //создание элемента
+					});
 				});
 			});
 		});
-	});
+	}
 }
-}
-
 
 /* СОБЫТИЕ ПРИ КЛИКЕ НА КАРТУ */
 function EventClickCard(data) {
-	$('.TotalData').on('click', (el, ind) => { //обработка события клик
+	$('.TotalData').on('click', (el, ind) => {
+		//обработка события клик
 		var NameScales = $(el.target).attr('value'); //получение имени весов
 		FillTemplateModal(data, NameScales); //заполнить модальное окно карточки
 		$('#DataOfHour').modal(); //показать модальное окно
@@ -117,20 +122,24 @@ function EventClickCard(data) {
 
 function FillTemplateModal(data, NameScales) {
 	$('.modal-body').empty(); //очистка блока
-	socket.emit('GetTimeSmen', schedule => {  //получение данных по  сменам
+	socket.emit('GetTimeSmen', schedule => {
+		//получение данных по  сменам
 		var NumSmenList = _.groupBy(schedule, 'NumSmen'); //группирока часов по сменам
-		var KeySmenList = _.keys(NumSmenList);  //получение ключей сгупированного объекта
-		async.eachOfSeries(KeySmenList, async (row, ind) => { //обход знаычений по часам
-			var div = $('<div>', { 
+		var KeySmenList = _.keys(NumSmenList); //получение ключей сгупированного объекта
+		async.eachOfSeries(KeySmenList, async (row, ind) => {
+			//обход знаычений по часам
+			var div = $('<div>', {
 				id: 'NumSmen_' + row,
 			}).appendTo('.modal-body'); //создание элемента
 			$('<h3>', {
 				class: 'text-center',
 				text: 'Смена ' + row,
 				NumSmen: row,
-			}).appendTo(div);//создание элемента
-			async.eachOfSeries(schedule, async (Times, ind) => { //обход смен
-				if (Times.NumSmen == row) { //проверка времени
+			}).appendTo(div); //создание элемента
+			async.eachOfSeries(schedule, async (Times, ind) => {
+				//обход смен
+				if (Times.NumSmen == row) {
+					//проверка времени
 					$('<span>', {
 						class: 'time',
 						text: Times.TimeStart + '-' + Times.TimeEnd,
@@ -141,7 +150,8 @@ function FillTemplateModal(data, NameScales) {
 						NumSmen: Number(row),
 					}); //выборка наднных с условиями
 					var SumMassHour = 0; //переменная для хранения суммы массы за час
-					await async.eachOfSeries(DataHour, async (rowDataHour, indDataHour) => { //обход данных 
+					await async.eachOfSeries(DataHour, async (rowDataHour, indDataHour) => {
+						//обход данных
 						SumMassHour += rowDataHour.Mass; //итерация суммы
 					});
 					SumMassHour = SumMassHour / 1000; //делим на 1000 чтобы получить тонны
