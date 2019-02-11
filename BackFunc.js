@@ -488,7 +488,7 @@ async function FillScales() {
 		var arr = []; //создание массива
 		async.forEachOfSeries(ListScales, async (row, ind) => {
 			//обход значений массива с полученными данными из БД
-			arr.push(row.name); //добавление имени весов в массив
+			arr.push(row.Name); //добавление имени весов в массив
 			if (ind == ListScales.length - 1) {
 				//првоерка на последний элемент массива
 				result.resolve(arr); //добавление презультата в promise

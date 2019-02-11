@@ -28,10 +28,10 @@ $(window).on('load', async () => {
 		async.forEachOfSeries(res, async (row, ind) => {
 			//обход имен весов
 			var DataScales = _.where(MassScalesOfDay, {
-				text: row.name, //имя весов
+				text: row.Name, //имя весов
 			}); //поиск строки с имененм весов
 			var MassOfDay = DataScales[0].values[0]; //получение масы по весам за день
-			Addcard(row.name, MassOfDay); //добавление элментов с весами
+			Addcard(row.Name, MassOfDay); //добавление элментов с весами
 		});
 	});
 	await GetDataScalesofHour().then(res => {
