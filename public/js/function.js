@@ -83,11 +83,11 @@ function NavTabClick() {
 						}).appendTo(tr); //создание элемента
 						$('<td>', {
 							class: 'text-center',
-							text: moment(row.DateTimeParse).format('DD.MM.YYYY  hh:mm'),
+							text: moment(row.DateTimeParse).format('DD.MM.YYYY  HH:mm'),
 						}).appendTo(tr); //создание элемента
 						$('<td>', {
 							class: 'text-center',
-							text: moment(row.DateTimeWeighing).format('DD.MM.YYYY  hh:mm'),
+							text: moment(row.DateTimeWeighing).format('DD.MM.YYYY  HH:mm'),
 						}).appendTo(tr); //создание элемента
 						$('<td>', {
 							class: 'text-center',
@@ -265,19 +265,55 @@ function ItemMainNav_Graphics() {
 		$('#ListScalesDataMass').height(GetHeightListScalesDataMass() - 72); //установка высоты для блока ListScalesDataMass
 		FillDateTimemainGraphics(); //заполнение дат в input
 		$('#MainGraphicsApply').on('click', () => {
-			BuildMainGrafics(); //сборка диаграммы
+			BuildMainGrafics();
 		});
-		BuildMainGrafics(); //сборка диаграммы
+		BuildMainGrafics();
 	});
+}
+
+function LoadDiagram(){
+  $('#MainGraphics').empty();
+  var main = $('<div>', {
+    class: 'justify-content-center text-center'
+  }).appendTo('#MainGraphics');
+  $('<h1>', {
+    class: 'text-center',
+    text: 'Идет загрузка...'
+  }).appendTo(main);
+  var mainDiv = $('<div>', {
+  class: 'preloader-wrapper big active crazy '
+}).appendTo(main);
+  var divTwo = $('<div>', {
+    class: 'spinner-layer spinner-blue-only justify-content-center'
+  }).appendTo(mainDiv);
+   var divThree = $('<div>', {
+    class: 'circle-clipper left'
+  }).appendTo(divTwo);
+  $('<div>', {
+    class: 'circle'
+  }).appendTo(divThree);
+  var divFour = $('<div>', {
+    class: 'gap-patch'
+  }).appendTo(divTwo);
+  $('<div>', {
+    class: 'circle'
+  }).appendTo(divFour);
+  var divFive = $('<div>', {
+    class: 'circle-clipper right'
+  }).appendTo(divTwo);
+  $('<div>', {
+    class: 'circle'
+  }).appendTo(divFive); 
+
 }
 
 /* Собрать диаграмму по данным */
 function BuildMainGrafics() {
+  LoadDiagram();//очистка блока диаграммы
 	var params = {}; //создание объекта для хранения параметров
 	params.DateTimeStart = moment($('#datetimeStart').val(), 'DD.MM.YYYY HH:mm').format('YYYY-MM-DD HH:mm'); //дата начала
 	params.DateTimeEnd = moment($('#datetimeEnd').val(), 'DD.MM.YYYY HH:mm').format('YYYY-MM-DD HH:mm'); //дата окончания
-
-	socket.emit('MainGraphicsApply', params, resultData => {
+	socket.emit('MainGraphicsApply', params, async resultData => {
 		var chartData = {
 			legend: {
 				layout: 'x2',
@@ -288,8 +324,9 @@ function BuildMainGrafics() {
 			scaleX: {
 				labels: resultData.labelDate, //даты
 			},
-		};
-		zingchart.render({
+    };
+    $('#MainGraphics').empty();
+		await zingchart.render({
 			//выгрузка данных в блок для формирования гшрафика
 			id: 'MainGraphics', //id элемента в который выгружаем
 			data: chartData, //формированные данные

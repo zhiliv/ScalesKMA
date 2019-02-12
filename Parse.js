@@ -135,7 +135,7 @@ exports.FillScales = ScalesAdress => {
 			GetDataFile(AdressNetto, 'netto', ScalesAdress, DataFile => {
 				DataFile.forEach((rowDataFile, ind) => {
 					//обход данныхз файла
-					var DateTimeParse = moment().format('YYYY-MM-DD HH:MM'); //время считывания файла
+					var DateTimeParse = moment().format('YYYY-MM-DD HH:mm'); //время считывания файла
 					var DateTimeWeighing = rowDataFile['date']; //время взвешивания
 					var typeScales = rowDataFile['typeScales']; //тип весов
 					var CountVagons = 0; //переменная для хранения количества вагонов
