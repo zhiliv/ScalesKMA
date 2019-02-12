@@ -23,6 +23,7 @@ $(window).on('load', async () => {
 	await GetMassWeightofDay().then(res => {
 		MassScalesOfDay = res; //присвоение результата переменной
 	});
+	GetDataScalesofHour().then(res => {});
 	await GetNameScales().then(res => {
 		//получение имен весов
 		async.forEachOfSeries(res, async (row, ind) => {
@@ -34,6 +35,7 @@ $(window).on('load', async () => {
 			Addcard(row.Name, MassOfDay); //добавление элментов с весами
 		});
 	});
+	await FillSmen();
 	await GetDataScalesofHour().then(res => {
 		//получение данных по часам
 		EventClickCard(res);
@@ -163,6 +165,10 @@ function FillTemplateModal(data, NameScales) {
 			});
 		});
 	});
+}
+
+function ClearCardscales() {
+	$('.List').empty();
 }
 
 /* ДОБАВЛЕНИЕ ЭЛЕМЕНТА В СПИСОК ВЕСОВ */
@@ -384,4 +390,84 @@ function GetDataScalesofHour() {
 		result.resolve(res); //добавление результата в promise
 	});
 	return result.promise; //возарт результата в promise
+}
+
+socket.on('UpdateData', async () => {
+	await ClearCardscales();
+	await GetTotalWeight().then(res => {
+		//получение суммы массы за день
+		res = Math.floor(res); //округление знания до целого
+		$('.total-weight').text(res + 'т.'); //вывод данных суммы массы за день в поле
+	});
+	var MassScalesOfDay; //масса с  весов за день
+	await GetMassWeightofDay().then(res => {
+		MassScalesOfDay = res; //присвоение результата переменной
+	});
+	await GetNameScales().then(res => {
+		//получение имен весов
+		async.forEachOfSeries(res, async (row, ind) => {
+			//обход имен весов
+			var DataScales = _.where(MassScalesOfDay, {
+				text: row.Name, //имя весов
+			}); //поиск строки с имененм весов
+			var MassOfDay = DataScales[0].values[0]; //получение масы по весам за день
+			Addcard(row.Name, MassOfDay); //добавление элментов с весами
+		});
+	});
+
+	await GetDataScalesofHour().then(res => {
+		//получение данных по часам
+		EventClickCard(res);
+	});
+
+	await FillSmen();
+});
+
+function FillSmen() {
+	$('.smen').remove();
+	GetDataOfSmen().then(res => {
+		async.eachSeries(res, async (rowData, indData) => {
+			var NameScales = rowData.NameScales;
+			$('.TotalData').each((ind, row) => {
+				var CardNameScales = $(row).attr('value');
+				if (NameScales == CardNameScales) {
+					var ParentElem = $(row).find('.card-body');
+					$('<h6>', {
+						text: 'Смена ' + rowData.NumSmen + ': ' + rowData.Summ + 'т.',
+						calss: 'smen',
+					}).appendTo(ParentElem);
+				}
+			});
+		});
+	});
+}
+
+/* ПОЛУЧЕНИЕ ДННЫХ ПО СМЕНАМ */
+function GetDataOfSmen() {
+	var result = Q.defer();
+	var arr = [];
+	socket.emit('GetDataOfSmens', res => {
+		var GroupScales = _.groupBy(res, 'NameScales');
+		var group = _.toArray(GroupScales); //конвертируем объект в массив
+		async.forEachOfSeries(group, async (row, ind) => {
+			var NameScales = row[0].NameScales;
+			var GroupSmen = _.toArray(_.groupBy(row, 'NumSmen'));
+			await async.forEachSeries(GroupSmen, async (rowSmen, indSmen) => {
+				var Obj = {};
+				var Summ = 0;
+				await async.forEachOfSeries(rowSmen, async (rowData, indData) => {
+					Obj.NumSmen = rowData.NumSmen;
+					Summ += rowData.Mass;
+				});
+				Obj.Summ = Summ / 1000;
+				Obj.NameScales = NameScales;
+				arr.push(Obj);
+			});
+
+			if (ind == group.length - 1) {
+				result.resolve(arr);
+			}
+		});
+	});
+	return result.promise;
 }

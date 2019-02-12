@@ -54,7 +54,7 @@ exports.StartServer = () => {
 				//првоерка параметра при запуске
 				StartParse(); //запуск парсинга
 			}
-		}, 5000);
+		}, 15000);
 	});
 };
 
@@ -113,5 +113,15 @@ io.on('connection', socket => {
 		DB.GetStatistics(res => {
 			callback(res);
 		});
-	});
+  });7
+
+  socket.on('GetDataOfSmens', callback => {
+    FN.GetDataOfSmens(res => {
+      callback(res)
+    })
+  })
+  
+  setInterval(() => {
+    socket.emit('UpdateData');
+}, 60000) 
 });

@@ -8,12 +8,15 @@ var xml2js = require('xml2js'), //модуль для перевода xml в js
 	Q = require('q'),
 	express = require('express'), //подключаем Express
 	app = express(), //создаем приложение
-	DB = require('./DB'),
+  DB = require('./DB'),
+  FNSrv = require('./server'),
 	server = require('http').Server(app), //создаем сервер
 	io = require('socket.io')(server), //подулючаем socket.io
 	path = require('path');
 
 var parser = new xml2js.Parser(); //создание нового парсера
+
+require('events').EventEmitter.prototype._maxListeners = 10000; //TODO изменить на 300;
 
 /* Получение списка файлов в папке */
 function GetListAllFile(DirName) {
@@ -35,7 +38,7 @@ function DefineError(err, FuncName) {
 
 /* вывод в терминал информации о загруженных файлах */
 function TerminalInfoLoadFile(data) {
-	console.log(clc.yellowBright.bold(moment().format() + ' Загружено файлов: ' + String(data)));
+	console.log(clc.yellowBright.bold(moment().format('DD.MM.YYYY HH:mm') + ' Загружено файлов: ' + String(data)));
 	console.log(
 		clc.yellowBright(
 			'■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■' +
@@ -116,12 +119,11 @@ function GetDataFile(DirName, TypeScales, Scales, callback) {
 		}
 	});
 	if (result.length > 0) {
+
 		TerminalInfoLoadFile(result.length);
-	}
+  }
 	return callback(result);
 }
-
-
 
 /* получение параметров весов */
 exports.FillScales = ScalesAdress => {
