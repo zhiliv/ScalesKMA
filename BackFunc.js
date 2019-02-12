@@ -3,8 +3,8 @@
 var Q = require('q'), //подключение модуля для работы с promise
 	_ = require('underscore'), //подключение модуля для работы с массивами и объектами
 	async = require('async'), //подключение модуля для ассинхронных операция
-  moment = require('moment'), //подключение momentjs
-  FN = require('./BackFunc'), //подключение функци
+	moment = require('moment'), //подключение momentjs
+	FN = require('./BackFunc'), //подключение функци
 	DB = require('./DB'); //подключения модуля для работы с БД
 
 moment.locale('ru'); //указание локации у moment js
@@ -1235,9 +1235,8 @@ exports.GetTotalWeight = async (params, callback) => {
 };
 
 exports.GetDataOfSmens = callback => {
-  var params = {};
-  FN.GetDataScalesofHour(params, res => {
-     callback(res)
-     
-  });
-}
+	var params = {};
+	FN.GetDataScalesofHour(params, res => {
+		callback(res);
+	});
+};
