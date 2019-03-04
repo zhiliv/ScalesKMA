@@ -216,8 +216,11 @@ exports.GetMainGraphics = async (params, callback) => {
 		async.forEachOfSeries(ListScales, async (row, ind) => {
 			//обход значений массива с имененм весов
 			await GetSostavGroupOfVagonsForDay(params, row).then(res => {
-				//поулчение данных из БД
+      //поулчение данных из БД
+      if(res.length > 0){
 				arr.push(res); //добавление результата в массив
+      }
+
 				if (ind == ListScales.length - 1) {
 					//проверка на последний элемент массива с весами
 					result.resolve(arr); //добавление результата в promise
@@ -242,7 +245,8 @@ exports.GetMainGraphics = async (params, callback) => {
 		await GetArrDate(ArrInitial).then(res => {
 			arrDate = res; //присвоение переменной результата
 		}); //получение массива дат(по дням)
-		var ResArrDate; //ооздание переменной для хранения данных с результо по датам
+    var ResArrDate; //ооздание переменной для хранения данных с результо по датам
+    if(arrDate.length > 0 ){
 		await GetArrDateDay(arrDate, params.DateTimeEnd).then(res => {
 			//получение резульатата по датам
 			ResArrDate = res; //присовение переменной значения
@@ -255,8 +259,13 @@ exports.GetMainGraphics = async (params, callback) => {
 		await CheckSostavOfTime(DataScales).then(res => {
 			//формирирование массива с составами по времени
 			result = res; //присвоение перменной значнеия
-		});
-		return result; //возврат результата
+    });
+    return result; //возврат результата
+  }
+  else{
+    return [];
+  }
+
 
 		/* ПРОВЕРКА СООТВЕТСТВИЯ СОСТАВF И ВРЕМЕНИ */
 		function CheckSostavOfTime(DataScales) {
@@ -455,7 +464,8 @@ exports.GetMainGraphics = async (params, callback) => {
 		function GetArrDate(List) {
 			var result = Q.defer(); //создание promise
 			var arrDate = []; //создание масива дляхранения дат
-			var Listdate = List.List; //исходный массив дат
+      var Listdate = List.List; //исходный массив дат
+      if(Listdate.length > 0 ){
 			async.forEachOfSeries(Listdate, async (row, ind) => {
 				//обход значений массива
 				await arrDate.push(row.DateTimeOp); //добавление в массив строки
@@ -463,7 +473,10 @@ exports.GetMainGraphics = async (params, callback) => {
 					//првоерка последней строки
 					result.resolve(arrDate); //добавлние рузльтата в promise
 				}
-			});
+      });}
+      else{
+        result.resolve([]); //добавлние рузльтата в promise
+      }
 			return result.promise; //возврат результата в promise
 		}
 	}
@@ -638,11 +651,12 @@ exports.GetDataScalesofHour = async (params, callback) => {
 			//обход данных
 			var arrNetto = row.Netto.List; //указание массива данных НЕТТО
 			var arrBrutto = row.Brutto.List; //Указание массива данных БРУТТО
-			var NameScales = row.Brutto.NameScales; //Указание имени весов
+      var NameScales = row.Brutto.NameScales; //Указание имени весов
+      if((arrNetto.length > 0) && (arrBrutto.length > 0)){
 			await Takedata(arrBrutto, arrNetto, NameScales).then(res => {
 				//получение данных
 				arr.push(res); //добавление резульатата в массив
-			});
+			});}
 			if (ind == Data.length - 1) {
 				//проверка на споследний элемент массива
 				result.resolve(arr); //добавление результата в promise
@@ -778,7 +792,13 @@ exports.GetTotalWeight = async (params, callback) => {
 	});
 	var ListData; //переменная для хранения данных
 	await FillNameScalesForData(ListScales, params).then(res => {
-		ListData = res; //присовение переменной значения
+    var arr = [];
+    async.eachOfSeries(res, async (row, ind) => {
+      if(row.length > 0){
+        arr.push(row)
+      }
+    })
+		ListData = arr; //присовение переменной значения
 	});
 	var ListDate; //переменная для хранения списка дат
 	await OrganizationDate(ListData).then(res => {

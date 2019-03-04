@@ -23,20 +23,26 @@ $(window).on('load', async () => {
 	await GetMassWeightofDay().then(res => {
 		MassScalesOfDay = res; //присвоение результата переменной
 	});
-	GetDataScalesofHour().then(res => {});
+	GetDataScalesofHour().then(res => {
+    
+  });
+
 	await GetNameScales().then(res => {
 		//получение имен весов
 		async.forEachOfSeries(res, async (row, ind) => {
 			//обход имен весов
 			var DataScales = _.where(MassScalesOfDay, {
 				text: row.Name, //имя весов
-			}); //поиск строки с имененм весов
+      }); //поиск строки с имененм весов
+      if(DataScales.length> 0){
 			var MassOfDay = DataScales[0].values[0]; //получение масы по весам за день
-			Addcard(row.Name, MassOfDay); //добавление элментов с весами
+      Addcard(row.Name, MassOfDay); //добавление элментов с весами
+      }
 		});
 	});
 	await FillSmen();
 	await GetDataScalesofHour().then(res => {
+		console.log('TCL: res', res)
 		//получение данных по часам
 		EventClickCard(res);
 		//
